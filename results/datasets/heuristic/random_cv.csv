@@ -1,0 +1,4 @@
+,algorithm,map_name,return_mean,return_std
+0,random,availability_medium,-31.030000000000005,18.31234835028271
+1,random,confidentiality_medium,-65.976,25.46346425787372
+2,random,integrity_medium,-34.0999,19.260007213598545

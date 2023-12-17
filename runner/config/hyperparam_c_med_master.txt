@@ -1,0 +1,9 @@
+
+batch_size=128
+batch_size=256
+buffer_size=5000
+buffer_size=10000
+lr=0.005
+lr=0.01
+td_lambda=0
+td_lambda=0.6

@@ -1,0 +1,3 @@
+confidentiality_medium
+integrity_medium
+availability_medium

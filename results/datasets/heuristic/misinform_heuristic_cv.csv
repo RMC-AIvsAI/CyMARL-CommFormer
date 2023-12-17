@@ -1,0 +1,4 @@
+,algorithm,map_name,return_mean,return_std
+1,heuristic,confidentiality_medium_misinform,-67.64161676646707,24.0343317711253
+2,heuristic,integrity_medium_misinform,-31.90389221556886,20.727249544839598
+0,heuristic,availability_medium_misinform,-21.391616766467067,16.95067712617623

@@ -1,0 +1,10 @@
+,algorithm,map_name,return_mean,return_std
+1,iql,confidentiality_medium_misinform,-19.755625,4.182175653936224
+2,iql,integrity_medium_misinform,-18.167604166666663,3.860459911126556
+0,iql,availability_medium_misinform,-14.473854166666666,2.977429107494523
+4,qmix,confidentiality_medium_misinform,-25.06677083333333,7.10269999323276
+5,qmix,integrity_medium_misinform,-16.754583333333336,3.476496645959705
+3,qmix,availability_medium_misinform,-11.62875,2.84154511914805
+1,heuristic,confidentiality_medium_misinform,-67.64161676646707,24.0343317711253
+2,heuristic,integrity_medium_misinform,-31.90389221556886,20.727249544839598
+0,heuristic,availability_medium_misinform,-21.391616766467067,16.95067712617623

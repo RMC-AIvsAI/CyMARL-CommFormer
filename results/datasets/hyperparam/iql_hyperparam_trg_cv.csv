@@ -1,0 +1,17 @@
+,name,return_mean,return_stdev
+0,iql_hyperparam_batch_size=128_buffer_size=10000_lr=0.005_td_lambda=0.0,-43.73688492063492,11.134829212418035
+1,iql_hyperparam_batch_size=128_buffer_size=10000_lr=0.005_td_lambda=0.6,-43.9579347041847,11.602857091943832
+2,iql_hyperparam_batch_size=128_buffer_size=10000_lr=0.01_td_lambda=0.0,-39.27398268398268,8.670327568015082
+3,iql_hyperparam_batch_size=128_buffer_size=10000_lr=0.01_td_lambda=0.6,-39.57846500721501,9.16041121702664
+4,iql_hyperparam_batch_size=128_buffer_size=5000_lr=0.005_td_lambda=0.0,-43.61323593073593,12.717684753475037
+5,iql_hyperparam_batch_size=128_buffer_size=5000_lr=0.005_td_lambda=0.6,-45.053385642135645,13.49743775316262
+6,iql_hyperparam_batch_size=128_buffer_size=5000_lr=0.01_td_lambda=0.0,-40.74389971139971,9.935506660537527
+7,iql_hyperparam_batch_size=128_buffer_size=5000_lr=0.01_td_lambda=0.6,-40.21392135642136,9.511963144481768
+8,iql_hyperparam_batch_size=256_buffer_size=10000_lr=0.005_td_lambda=0.0,-41.248315295815296,9.17419588037763
+9,iql_hyperparam_batch_size=256_buffer_size=10000_lr=0.005_td_lambda=0.6,-41.15058802308802,9.85239695632942
+10,iql_hyperparam_batch_size=256_buffer_size=10000_lr=0.01_td_lambda=0.0,-39.42933621933622,8.676425829180944
+11,iql_hyperparam_batch_size=256_buffer_size=10000_lr=0.01_td_lambda=0.6,-39.12375901875902,8.630882221390666
+12,iql_hyperparam_batch_size=256_buffer_size=5000_lr=0.005_td_lambda=0.0,-43.24466810966811,11.153103856651502
+13,iql_hyperparam_batch_size=256_buffer_size=5000_lr=0.005_td_lambda=0.6,-42.982440476190476,10.796192975814826
+14,iql_hyperparam_batch_size=256_buffer_size=5000_lr=0.01_td_lambda=0.0,-40.77112012987013,10.108729627019438
+15,iql_hyperparam_batch_size=256_buffer_size=5000_lr=0.01_td_lambda=0.6,-40.814947691197695,9.896515021755475

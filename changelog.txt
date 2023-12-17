@@ -1,0 +1,29 @@
+General
+- Makes PyMARL into a package for easy installation/development
+- Restructures CybORG Wrappers to be a first level module
+
+Improvements/Fixes
+- Adds MultiAgentGymWapper.py for interface with MARL frameworks.
+- Adds multi_step() method to allow for multi-agent input-output. See BaseWrapper.py line 19 and env.py line 163.
+- Removes unimplemented method from SSHBruteForce.py line 43.
+- Fixes bug with internal_agent not being loaded from the scenario file. See Scenario.py line 142.
+- Fixes bug with 'done' always returning 'False' causing pymarl to crash. Added "time_limit" variable to EnvironmentController.py and related files (see commit 1ea82ad). See ScenarioGenerator.py line 26.
+- Fixes team assignment in EnvironmentController so that agents can be assigned to arbitrary teams rather than team names being equivilent to agent names. See EnvironmentController.py line 110, 468.
+- Adds files to state INFO DICT. See EnvironmentController.py line 66.
+- Modifies encoding method for table. See BlueTableWrapper.py line 214.
+- PyMARL: adds CybORG environement wrapper. See cyborg_env.py.
+
+* Note: no "bugs" discovered affect the CAGE Challenge 3 scenario.
+
+New Features
+- Enables penalties for actions to all agents within a team. See EnvironmentController.py line 184.
+- Cost of restore action scales with availability value. See RedRewardCalculator line 123.
+- Adds Integrity and Availability reward calculators for CyMARL scenarios. See RedRewardCalculator.py and BlueRewardCalculator.py.
+- Adds 9 scenarios based on 3 network sizes and 3 attacker objectives.
+- Adds abstract actions: Tamper, DataRepair, and Deny. Adds concrete actions: AddFile, RemoveFile.
+- Adds 3 attacker agents (CIA) and 2 defender agents (IA).
+- Adds jupyter notebooks for analyzing results using pandas/seaborn
+
+
+IN PROGRESS
+

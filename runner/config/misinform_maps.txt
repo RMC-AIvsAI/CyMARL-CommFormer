@@ -1,0 +1,3 @@
+confidentiality_medium_misinform
+integrity_medium_misinform
+availability_medium_misinform
