@@ -14,7 +14,7 @@
    "model_know_share":true,
    "model_action_aware":true,
    "model_rnn_size":128,
-   "bs":12,
+   "bs":8,
    "optimizer": "rms",
    "learningrate":0.001,
    "momentum":0.05,

@@ -42,7 +42,17 @@ def save_episode_and_reward_to_csv(file, writer, e, r):
 	writer.writerow({'episode': e, 'reward': r})
 	file.flush()
 
-def run_trial(opt, env_args, result_path=None, verbose=False):
+def save_episode_to_json(json_file, episode_index, episode):
+    episode_info = {
+        "episode_index": episode_index,
+        "steps": episode.steps.tolist(),
+        "rewards": episode.r.tolist(),
+        # Add more fields as needed
+    }
+    json.dump(episode_info, json_file)
+    json_file.write('\n')
+
+def run_trial(opt, env_args, result_path=None, result_path_json=None, verbose=False):
 	# Initialize action and comm bit settings
 	opt = init_opt(opt)
 	arena = Arena(opt, env_args)
@@ -51,11 +61,18 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 	test_callback = None
 	if result_path:
 		result_out = open(result_path, 'w')
+		#result_out_json = open(result_path_json, 'w')
+
 		csv_meta = '#' + json.dumps(opt) + '\n'
+		#json_meta = '#' + json.dumps(opt) + '\n'
+
 		result_out.write(csv_meta)
+		#result_out_json.write(json_meta)
+
 		writer = csv.DictWriter(result_out, fieldnames=['episode', 'reward'])
 		writer.writeheader()
 		test_callback = partial(save_episode_and_reward_to_csv, result_out, writer)
+
 
 	for agent in agents[1:]:
 		agent.reset()
@@ -72,7 +89,10 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 		else:
 			for agent in agents[1:]:
 				agent.learn_from_episode(episode)
-
+		"""
+		if result_out_json:
+			save_episode_to_json(result_out_json, e, episode)
+		"""
 		if e % opt.step_test == 0:
 			episode = arena.run_episode(agents, train_mode=False)
 			norm_r = average_reward(opt, episode, normalized=opt.normalized_reward)
@@ -83,7 +103,10 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 
 	if result_path:
 		result_out.close()
-		
+	"""
+	if result_path_json:
+		result_out_json.close()
+	"""
 def average_reward(opt, episode, normalized=True):
     reward = episode.r.sum()/(opt.bs * opt.game_nagents)
     if normalized:

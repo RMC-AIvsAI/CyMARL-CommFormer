@@ -18,15 +18,20 @@ class CybORGCNet(nn.Module):
 		self.opt = opt
 		self.comm_size = opt.game_comm_bits
 		self.init_param_range = (-0.08, 0.08)
-
+		self.max_host = (opt.game_obs_space - 1) // 5
 		# Set up inputs
 		self.agent_lookup = nn.Embedding(opt.game_nagents, opt.model_rnn_size)
 
-		self.state_mlp= nn.Sequential()
+		# Create a ModuleList for the state embeddings
+		self.state_mlp= nn.ModuleList()
 
-		self.state_mlp.add_module('linear', nn.Linear(opt.game_obs_space, opt.model_rnn_size))
-		self.state_mlp.add_module('relu1', nn.ReLU(inplace=True))
-			
+		# Add Embeddings to the ModuleList based on the specified number of embeddings
+		for _ in range(self.max_host):
+			self.state_mlp.append(nn.Embedding(32, opt.model_rnn_size))
+
+		# Add an additional Embedding for n_steps
+		self.state_mlp.append(nn.Embedding(opt.nsteps, opt.model_rnn_size))
+
 		# Action aware
 		self.prev_message_lookup = None
 		if opt.model_action_aware:
@@ -68,7 +73,10 @@ class CybORGCNet(nn.Module):
 		self.messages_mlp.linear1.reset_parameters()
 		self.rnn.reset_parameters()
 		self.agent_lookup.reset_parameters()
-		self.state_mlp.linear.reset_parameters()
+
+		# Reset parameters for each state embedding in the ModuleList
+		for state_embedding in self.state_mlp:
+			state_embedding.reset_parameters()
 
 		self.prev_action_lookup.reset_parameters()
 
@@ -104,7 +112,16 @@ class CybORGCNet(nn.Module):
 
 		z_a, z_o, z_u, z_m = [0]*4
 		z_a = self.agent_lookup(agent_index)
-		z_o = self.state_mlp(s_t)
+
+		for i, state_embedding in enumerate(self.state_mlp):
+			start_index = i * 5
+			end_index = min(start_index + 5, s_t.size(1))
+			if end_index - start_index == 5:
+				module_input = s_t[:, start_index:end_index].matmul(2**torch.arange(end_index - start_index).flip(0))
+			else:
+				module_input = s_t[:, start_index:end_index].squeeze()
+			z_o += state_embedding(module_input)
+
 		if opt.model_action_aware:
 			z_u = self.prev_action_lookup(prev_action)
 			if prev_message is not None:

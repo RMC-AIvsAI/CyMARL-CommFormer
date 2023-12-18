@@ -47,8 +47,10 @@ if __name__ == '__main__':
 
 	for i in range(args.ntrials):
 		trial_result_path = None
+		trial_result_path_json = None
 		if result_path:
 			trial_result_path = result_path + '_' + str(i + args.start_index) + '_' + str(datetime.datetime.now().strftime("%Y_%m_%d_T%H_%M_%S_%f")) + '.csv'
+			trial_result_path_json = result_path + '_' + str(i + args.start_index) + '_' + str(datetime.datetime.now().strftime("%Y_%m_%d_T%H_%M_%S_%f")) + '.json'
 		trial_opt = copy.deepcopy(opt)
-		run_trial(trial_opt, env_args, result_path=trial_result_path, verbose=args.verbose)
+		run_trial(trial_opt, env_args, result_path=trial_result_path, result_path_json=trial_result_path_json, verbose=args.verbose)
 

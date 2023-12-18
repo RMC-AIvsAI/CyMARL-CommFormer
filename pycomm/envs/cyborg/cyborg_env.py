@@ -27,7 +27,7 @@ class CyborgEnv(MultiAgentEnv):
         self.longest_observation_space = max(
             self._env.observation_spaces.values(), key=lambda x: x.shape
         )
-        self.longest_turn_vector_obs = flatdim(self.longest_observation_space) + time_limit
+        self.longest_turn_vector_obs = flatdim(self.longest_observation_space) + 1
         self.step_count = 0
         self.sender = []
 
@@ -67,15 +67,14 @@ class CyborgEnv(MultiAgentEnv):
         
         if self.step_count < self.episode_limit:
             state = []
-            turn_vector = [0] * (self.episode_limit)
-            turn_vector[self.step_count] = 1 # Monitor the current timestep
+
             for agent in range(self.n_agents):
                 agent_obs = self._obs[agent]
                 flattened_obs = sum(agent_obs, [])  # Concatenate sublists
-                padded_obs = flattened_obs + [-1] * (self.get_obs_size() - len(flattened_obs))
-                padded_obs.extend(turn_vector)
+                padded_obs = flattened_obs + [0] * (self.get_obs_size() - len(flattened_obs))
+                padded_obs.extend([self.step_count])
                 state.append(padded_obs)
-            state_tensor = torch.tensor(state, dtype=torch.float)
+            state_tensor = torch.tensor(state, dtype=torch.long)
             return state_tensor
         return torch.zeros(self.n_agents, self.longest_turn_vector_obs)
 
