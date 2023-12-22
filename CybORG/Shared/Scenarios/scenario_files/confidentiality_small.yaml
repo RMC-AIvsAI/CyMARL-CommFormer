@@ -27,6 +27,7 @@ Agents:
       - Monitor
       - Remove
       - Restore
+      - Analyse
     agent_type: SleepAgent
     reward_calculator_type: BlueConfidentiality
     starting_sessions:
@@ -79,6 +80,7 @@ Agents:
       - Monitor
       - Remove
       - Restore
+      - Analyse
     agent_type: SleepAgent
     reward_calculator_type: BlueConfidentiality
     starting_sessions:
@@ -119,6 +121,7 @@ Agents:
     - DiscoverNetworkServices
     - ExploitRemoteService
     - PrivilegeEscalate
+    - Impact
     agent_type: RedConfidentialityAgent
     reward_calculator_type: RedConfidentiality
     starting_sessions:

@@ -2,17 +2,18 @@ import numpy as np
 import torch
 
 class DRU:
-	def __init__(self, sigma, comm_narrow=True, hard=False):
+	def __init__(self, sigma, device, comm_narrow=True, hard=False):
 		self.sigma = sigma
 		self.comm_narrow = comm_narrow
 		self.hard = hard
+		self.device = device
 
 	def regularize(self, m):	
-		m_reg = m + torch.randn(m.size()) * self.sigma
+		m_reg = m + torch.randn(m.size()).to(self.device) * self.sigma
 		if self.comm_narrow:
-			m_reg = torch.sigmoid(m_reg)
+			m_reg = torch.sigmoid(m_reg).to(self.device)
 		else:
-			m_reg = torch.softmax(m_reg, 0)
+			m_reg = torch.softmax(m_reg, 0).to(self.device)
 		return m_reg
 
 	def discretize(self, m):
@@ -20,7 +21,7 @@ class DRU:
 			if self.comm_narrow:
 				return (m.gt(0.5).float() - 0.5).sign().float()
 			else:
-				m_ = torch.zeros_like(m)
+				m_ = torch.zeros_like(m).to(self.device)
 				if m.dim() == 1:      
 					_, idx = m.max(0)
 					m_[idx] = 1.
@@ -34,9 +35,9 @@ class DRU:
 		else:
 			scale = 2 * 20
 			if self.comm_narrow:
-				return torch.sigmoid((m.gt(0.5).float() - 0.5) * scale)
+				return torch.sigmoid((m.gt(0.5).float() - 0.5) * scale).to(self.device)
 			else:
-				return torch.softmax(m * scale, -1)
+				return torch.softmax(m * scale, -1).to(self.device)
 
 	def forward(self, m, train_mode):
 		if train_mode:

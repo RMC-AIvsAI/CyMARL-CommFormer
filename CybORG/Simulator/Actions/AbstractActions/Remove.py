@@ -14,27 +14,38 @@ class Remove(Action):
         self.agent = agent
         self.session = session
         self.hostname = hostname
+        self.action_success = False
 
     def execute(self, state: State) -> Observation:
         # perform monitor at start of action
-        #monitor = Monitor(session=self.session, agent=self.agent)
-        #obs = monitor.execute(state)
+        monitor = Monitor(session=self.session, agent=self.agent)
+        obs = monitor.execute(state)
 
         parent_session: VelociraptorServer = state.sessions[self.agent][self.session]
         # find relevant session on the chosen host
         sessions = [s for s in state.sessions[self.agent].values() if s.hostname == self.hostname]
         if len(sessions) > 0:
             session = state.np_random.choice(sessions)
-            obs = Observation(True)
+            #obs = Observation(True)
             # remove suspicious processes
             if self.hostname in parent_session.sus_pids:
                 for sus_pid in parent_session.sus_pids[self.hostname]:
                     action = StopProcess(session=self.session, agent=self.agent, target_session=session.ident, pid=sus_pid)
                     action.execute(state)
+                self.action_success = True
+            else:
+                self.action_success = False
             # remove suspicious files
             return obs
         else:
             return Observation(False)
 
+    @property
+    def cost(self):
+        if not self.action_success:
+            return -0.1
+        else:
+            return 0
+    
     def __str__(self):
         return f"{self.__class__.__name__} {self.hostname}"

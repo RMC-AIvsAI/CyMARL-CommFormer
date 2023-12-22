@@ -17,8 +17,8 @@ class Analyse(Action):
 
     def execute(self, state) -> Observation:
         # perform monitor at start of action
-        #monitor = Monitor(session=self.session, agent=self.agent)
-        #obs = monitor.execute(state)
+        monitor = Monitor(session=self.session, agent=self.agent)
+        obs = monitor.execute(state)
         
         artefacts = [DensityScout, SigCheck]
         # find relevant session on the chosen host
@@ -26,7 +26,7 @@ class Analyse(Action):
         if len(sessions) > 0:
             session = state.np_random.choice(sessions)
             # run the artifacts on the chosen host
-            obs = Observation(True)
+            #obs = Observation(True)
             for artifact in artefacts:
                 sub_action = artifact(agent=self.agent, session=self.session, target_session=session.ident)
                 sub_obs = sub_action.execute(state)

@@ -32,6 +32,7 @@ class EnumActionDIALWrapper(BaseWrapper):
         possible_actions = []
         temp = {}
         params = ['action']
+        agent = list(action_space['agent'].keys())[0]
         for i, action in enumerate(action_space['action']):
             if action not in self.action_signature:
                 self.action_signature[action] = inspect.signature(action).parameters
@@ -50,8 +51,7 @@ class EnumActionDIALWrapper(BaseWrapper):
                     new_param_list = []
                     for p_dict in param_list:
                         for key, val in action_space[p].items():
-                            agent_key, agent_value = next(iter(action_space['agent'].items()))
-                            if "Blue" in agent_key and p == "hostname":
+                            if "Blue" in agent and p == "hostname":
                                 if key == "Defender":
                                     continue
                                 if key == "User0":
@@ -64,5 +64,11 @@ class EnumActionDIALWrapper(BaseWrapper):
             for p_dict in param_list:
                 possible_actions.append(action(**p_dict))
 
-        self.possible_actions[list(action_space['agent'].keys())[0]] = possible_actions
-        return len(possible_actions)
+        if agent != 'Red':
+            possible_actions_sorted = [possible_actions[0]] + sorted(possible_actions[1:], key=lambda x: x.hostname[-1])
+        else:
+            possible_actions_sorted = possible_actions
+
+        self.possible_actions[list(action_space['agent'].keys())[0]] = possible_actions_sorted
+        return len(possible_actions_sorted)
+

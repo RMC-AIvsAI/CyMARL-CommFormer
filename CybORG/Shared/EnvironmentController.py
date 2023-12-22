@@ -157,8 +157,11 @@ class EnvironmentController(CybORGLogger):
                 actions[agent_name] = self.replace_action_if_invalid(actions[agent_name], agent_object)
 
         self.action = actions
-        actions = self.sort_action_order(actions)
+        #actions = self.sort_action_order(actions)
 
+        #sort the actions such that red always goes first
+        actions = self.reorder_red_first(actions)
+        
         # clear old observations
         self.observation = {}
 
@@ -209,6 +212,15 @@ class EnvironmentController(CybORGLogger):
         msg_space = gym.spaces.MultiBinary(self.message_length)
         msg_space._np_random = self.np_random
         return msg_space
+
+    def reorder_red_first(self, actions: dict) -> dict:
+        if 'Red' in actions:
+            reordered_dict = {'Red': actions['Red']}
+            reordered_dict.update({key: actions[key] for key in actions if key != 'Red'})
+            return reordered_dict
+        else:
+            # 'Red' is not in the dictionary, return the original dictionary
+            return actions
 
     def sort_action_order(self, actions: dict) -> dict:
         """Reorders the actions to determine order of execution"""

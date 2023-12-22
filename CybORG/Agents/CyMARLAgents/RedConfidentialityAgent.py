@@ -11,11 +11,12 @@ class RedConfidentialityAgent(BaseAgent):
     def __init__(self):
         self.scanned_subnets = []
         self.scanned_ips = []
-        self.exploited_ips = []
+        self.exploited_ips = {} # exploited Ips will be stored in a dict with Ip address as key and step_count as value
         self.escalated_hosts = []
         self.host_ip_map = {}
         self.last_host = None
         self.last_ip = None
+        self.step_count = 0
 
     def train(self, results: Results):
         """allows an agent to learn a policy"""
@@ -23,6 +24,8 @@ class RedConfidentialityAgent(BaseAgent):
 
     def get_action(self, observation, action_space):
         """gets an action from the agent that should be performed based on the agent's internal state and provided observation and action space"""
+
+        self.step_count += 1
         self._process_success(observation)
 
         session = list(action_space['session'].keys())[0]
@@ -61,6 +64,9 @@ class RedConfidentialityAgent(BaseAgent):
             # test if host is exploited
             if hostname in self.host_ip_map and self.host_ip_map[hostname] not in self.exploited_ips:
                 continue
+            # 1 to 2 timestep delay in Priv Escalate after a host is exploited which allows the blue agent to explore the remove action
+            if self.exploited_ips and (self.step_count - self.exploited_ips[self.host_ip_map[hostname]]) < random.randint(2,3):
+                continue
             self.escalated_hosts.append(hostname)
             self.last_host = hostname
             return PrivilegeEscalate(hostname=hostname, agent='Red', session=session)
@@ -70,7 +76,7 @@ class RedConfidentialityAgent(BaseAgent):
             # test if output of observation matches expected output
             if not action_space["ip_address"][address] or address in self.exploited_ips:
                 continue
-            self.exploited_ips.append(address)
+            self.exploited_ips[address] = self.step_count
             self.last_ip = address
             return ExploitRemoteService(ip_address=address, agent='Red', session=session)
 
@@ -93,31 +99,32 @@ class RedConfidentialityAgent(BaseAgent):
                 if self.last_host in self.escalated_hosts:
                     self.escalated_hosts.remove(self.last_host)
                 if self.last_host in self.host_ip_map and self.host_ip_map[self.last_host] in self.exploited_ips:
-                    self.exploited_ips.remove(self.host_ip_map[self.last_host])
+                    self.exploited_ips.pop(self.host_ip_map[self.last_host])
             self.last_host = None
 
     def _process_failed_ip(self):
-        self.exploited_ips.remove(self.last_ip)
+        self.exploited_ips.pop(self.last_ip)
         hosts_of_type = lambda y: [x for x in self.escalated_hosts if y in x]
         if len(hosts_of_type('Op')) > 0:
             for host in hosts_of_type('Op'):
                 self.escalated_hosts.remove(host)
                 ip = self.host_ip_map[host]
-                self.exploited_ips.remove(ip)
+                self.exploited_ips.pop(ip)
         elif len(hosts_of_type('Ent')) > 0:
             for host in hosts_of_type('Ent'):
                 self.escalated_hosts.remove(host)
                 ip = self.host_ip_map[host]
-                self.exploited_ips.remove(ip)
+                self.exploited_ips.pop(ip)
 
     def end_episode(self):
         self.scanned_subnets = []
         self.scanned_ips = []
-        self.exploited_ips = []
+        self.exploited_ips = {}
         self.escalated_hosts = []
         self.host_ip_map = {}
         self.last_host = None
         self.last_ip = None
+        self.step_count = 0
 
     def set_initial_values(self, action_space, observation):
         pass

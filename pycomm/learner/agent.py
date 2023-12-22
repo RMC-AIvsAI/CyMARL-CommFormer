@@ -12,17 +12,17 @@ from utils.dotdic import DotDic
 from components.dru import DRU
 
 class CNetAgent:
-	def __init__(self, opt, model, target, index):
+	def __init__(self, opt, device, model, target, index):
 		self.opt = opt
 		self.game = None
 		self.model = model
 		self.model_target = target
-
+		self.device = device
 		for p in self.model_target.parameters():
 			p.requires_grad = False
 
 		self.episodes_seen = 0
-		self.dru = DRU(opt.game_comm_sigma, opt.model_comm_narrow, opt.game_comm_hard)
+		self.dru = DRU(opt.game_comm_sigma, device, opt.model_comm_narrow, opt.game_comm_hard)
 		self.id = index
 		if opt.optimizer == "adam":
 			self.optimizer = Adam(params=model.get_params(), lr=opt.learningrate, weight_decay=0)
@@ -145,4 +145,6 @@ class CNetAgent:
 		if self.episodes_seen % self.opt.step_target == 0:
 			self.model_target.load_state_dict(self.model.state_dict())
 
-
+	def cuda(self):
+		self.model.cuda()
+		self.model_target.cuda()

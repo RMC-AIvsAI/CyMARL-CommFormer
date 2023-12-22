@@ -116,8 +116,10 @@ class CybORGCNet(nn.Module):
 		for i, state_embedding in enumerate(self.state_mlp):
 			start_index = i * 5
 			end_index = min(start_index + 5, s_t.size(1))
+			
 			if end_index - start_index == 5:
-				module_input = s_t[:, start_index:end_index].matmul(2**torch.arange(end_index - start_index).flip(0))
+				indices = torch.arange(end_index - start_index).flip(0).to(s_t.device)
+				module_input = (s_t[:, start_index:end_index] * (2**indices)).sum(dim=1)
 			else:
 				module_input = s_t[:, start_index:end_index].squeeze()
 			z_o += state_embedding(module_input)

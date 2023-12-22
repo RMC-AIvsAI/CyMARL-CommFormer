@@ -1,5 +1,6 @@
 from functools import partial
 import json, csv, copy
+import torch
 
 from modules import REGISTRY as cnet_Registry
 from learner.agent import CNetAgent
@@ -27,12 +28,12 @@ def create_cnet(opt):
 	game_name = opt.game.lower()
 	return cnet_Registry[game_name](opt)
 
-def create_agents(opt):
+def create_agents(opt, device):
 	agents = [None] # 1-index agents
 	cnet = create_cnet(opt)
 	cnet_target = copy.deepcopy(cnet)
 	for i in range(1, opt.game_nagents + 1):
-		agents.append(CNetAgent(opt, model=cnet, target=cnet_target, index=i))
+		agents.append(CNetAgent(opt, device, model=cnet, target=cnet_target, index=i))
 		if not opt.model_know_share:
 			cnet = create_cnet(opt)
 			cnet_target = copy.deepcopy(cnet)
@@ -55,9 +56,16 @@ def save_episode_to_json(json_file, episode_index, episode):
 def run_trial(opt, env_args, result_path=None, result_path_json=None, verbose=False):
 	# Initialize action and comm bit settings
 	opt = init_opt(opt)
+	device = torch.device("cuda" if opt.device == 'cuda' and torch.cuda.is_available() else "cpu")
 	arena = Arena(opt, env_args)
-	agents = create_agents(arena.opt)
-	
+	agents = create_agents(arena.opt, device)
+
+	if device == torch.device('cuda'):
+		for agent in agents:
+			if agent is not None:
+				agent.cuda()
+
+
 	test_callback = None
 	if result_path:
 		result_out = open(result_path, 'w')

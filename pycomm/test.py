@@ -1,13 +1,24 @@
-import torch
 
-s_t = torch.tensor([[1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 5],
-        [1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 5]])
-for i in range(3):
-    start_index = i * 5
-    end_index = min(start_index + 5, s_t.size(1))
-    if end_index - start_index == 5:
-        module_input = s_t[:, start_index:end_index].matmul(2**torch.arange(end_index - start_index).flip(0))
-    else:
-        module_input = s_t[:, start_index:end_index].squeeze()
+def rearrange_dictionary(dictionary):
+    
+    dictionary = {key: [value[0]] + sorted(value[1:], key=lambda x: x[-1]) if key != 'Red' else value for key, value in dictionary.items()}
 
-    print(start_index, end_index, module_input)
+
+
+
+    return dictionary
+
+
+# Example usage:
+my_dictionary = {
+    "Red": ["Monitor", "Remove User1", "Restore User1", "Analyse User1"],
+    "Green": ["Monitor", "Remove User1", "Remove User2", "Restore User1", "Restore User2", "Analyse User1", "Analyse User2"],
+    "Blue": ["Monitor", "Remove User1", "Remove User2", "Remove User3", "Restore User1", "Restore User2", "Restore User3", "Analyse User1", "Analyse User2", "Analyse User3"]
+}
+
+my_list = ["Remove User1", "Remove User2", "Remove User3", "Restore User1", "Restore User2", "Restore User3", "Analyse User1", "Analyse User2", "Analyse User3"]
+
+new_dictionary = rearrange_dictionary(my_dictionary)
+
+print(new_dictionary)
+

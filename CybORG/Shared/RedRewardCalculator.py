@@ -21,6 +21,8 @@ HostReward = namedtuple('HostReward','confidentiality availability')
 # CyMARL - confidentiality
 class PwnRewardCalculator(RewardCalculator):
     # this reward calculator provides a reward to Red due to changes in the number of privileged sessions
+    # For DIAL implementation added rewards for exploited hosts. Exploited hosts now will receive the score of confidentiality value
+    # and privilege escalated hosts will receive double the confidentiality value
     def __init__(self, agent_name: str, scenario: Scenario):
         super().__init__(agent_name)
         self.old_total = 0
@@ -38,6 +40,7 @@ class PwnRewardCalculator(RewardCalculator):
     def calculate_reward(self, current_state: dict, action: dict, agent_observations: dict, done: bool):
         root_sessions = 0
         system_sessions = 0
+        user_sessions = 0
         self.compromised_hosts = {}
         for host, info in current_state.items():
             if host == 'success':
@@ -46,21 +49,38 @@ class PwnRewardCalculator(RewardCalculator):
             if 'Sessions' in info:
                 for session in info['Sessions']:
                     if session['Agent'] == self.agent_name:
-                        # count the number of root sessions
-                        if session['Username'] == 'root' and info['System info']['OSType'] == OperatingSystemType.LINUX:
-                            confidentiality_value = self.mapping[self.scenario.get_host(host).get_confidentiality_value('Low')]
-                            root_sessions += confidentiality_value
-                            self.compromised_hosts[host] = confidentiality_value
-                            break
-                        # count the number of SYSTEM sessions
-                        if session['Username'] == 'SYSTEM' and info['System info']['OSType'] == OperatingSystemType.WINDOWS:
-                            confidentiality_value = self.mapping[self.scenario.get_host(host).get_confidentiality_value('Low')]
-                            system_sessions += confidentiality_value
-                            self.compromised_hosts[host] = confidentiality_value
-                            break
+                        
+                        if info['System info']['OSType'] == OperatingSystemType.LINUX:
+                            # count the number of root sessions
+                            if session['Username'] == 'root':
+                                confidentiality_value = self.mapping[self.scenario.get_host(host).get_confidentiality_value('Low')]
+                                root_sessions += (confidentiality_value * 2)
+                                self.compromised_hosts[host] = (confidentiality_value * 2)
+                                break
+                            else:
+                                # count the number of user sessions
+                                confidentiality_value = self.mapping[self.scenario.get_host(host).get_confidentiality_value('Low')]
+                                user_sessions += confidentiality_value
+                                self.compromised_hosts[host] = confidentiality_value
+                                break
+                        
+                        if info['System info']['OSType'] == OperatingSystemType.WINDOWS:
+                            # count the number of SYSTEM sessions
+                            if session['Username'] == 'SYSTEM':
+                                confidentiality_value = self.mapping[self.scenario.get_host(host).get_confidentiality_value('Low')]
+                                system_sessions += (confidentiality_value * 2)
+                                self.compromised_hosts[host] = (confidentiality_value * 2)
+                                break
+                            else:
+                                # count the number of user sessions
+                                confidentiality_value = self.mapping[self.scenario.get_host(host).get_confidentiality_value('Low')]
+                                user_sessions += confidentiality_value
+                                self.compromised_hosts[host] = confidentiality_value
+                                break
+
 
         # find the difference from the old privileged sessions
-        total = root_sessions + system_sessions
+        total = root_sessions + system_sessions + user_sessions
         reward = total #- self.old_total
         self.old_total = total
         return round(reward, REWARD_MAX_DECIMAL_PLACES)

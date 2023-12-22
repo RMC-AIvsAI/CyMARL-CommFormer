@@ -16,7 +16,8 @@ class Arena:
 		self.opt = opt
 		self.env_args = env_args
 		self.eps = opt.eps_finish
-		self.episode = Episode(opt)
+		self.device = torch.device("cuda" if opt.device == 'cuda' and torch.cuda.is_available() else "cpu")
+		self.episode = Episode(opt, self.device)
 
 		self.parent_conns, self.worker_conns = zip(*[Pipe() for _ in range(self.opt.bs)])
 		env_fn = env_REGISTRY[self.opt.game.lower()]
@@ -48,7 +49,7 @@ class Arena:
 			self.opt.game_action_space_total = self.opt.game_action_space
 
 	def reset(self):
-		state = torch.zeros(self.opt.bs, self.opt.game_nagents, self.opt.game_obs_space)
+		state = torch.zeros(self.opt.bs, self.opt.game_nagents, self.opt.game_obs_space).to(self.device)
 		# Reset the envs
 		for parent_conn in self.parent_conns:
 			parent_conn.send(("reset", None))
@@ -99,7 +100,7 @@ class Arena:
 				# Get prev action per batch
 				prev_action = None
 				if opt.model_action_aware:
-					prev_action = torch.ones(opt.bs, dtype=torch.long)
+					prev_action = torch.ones(opt.bs, dtype=torch.long).to(self.device)
 					if not opt.model_dial:
 						prev_message = torch.ones(opt.bs, dtype=torch.long)
 					for b in range(opt.bs):
@@ -112,7 +113,7 @@ class Arena:
 						prev_action = (prev_action, prev_message)
 
 				# Batch agent index for input into model
-				batch_agent_index = torch.zeros(opt.bs, dtype=torch.long).fill_(agent_idx)
+				batch_agent_index = torch.zeros(opt.bs, dtype=torch.long).fill_(agent_idx).to(self.device)
 
 				agent_inputs = {
 					's_t': episode.step_records[step].s_t[:, agent_idx],
@@ -212,9 +213,9 @@ class Arena:
 		return episode
 
 	def get_step(self, actions):
-		reward = torch.zeros(self.opt.bs, self.opt.game_nagents, dtype=torch.float)
-		terminal = torch.zeros(self.opt.bs, dtype=torch.long)
-		state = torch.zeros(self.opt.bs, self.opt.game_nagents, self.opt.game_obs_space)
+		reward = torch.zeros(self.opt.bs, self.opt.game_nagents, dtype=torch.float).to(self.device)
+		terminal = torch.zeros(self.opt.bs, dtype=torch.long).to(self.device)
+		state = torch.zeros(self.opt.bs, self.opt.game_nagents, self.opt.game_obs_space).to(self.device)
 		for bs, parent_conn in enumerate(self.parent_conns):
 			parent_conn.send(("step", actions[bs]))
 
@@ -231,8 +232,8 @@ class Arena:
 	def get_action_range(self, a_total, step, agent_idx):
 		#TODO incase if implementing valid action check which will result in action space being different for all agents
 
-		action_range = torch.zeros((self.opt.bs, 2), dtype=torch.long)
-		comm_range = torch.zeros((self.opt.bs, 2), dtype=torch.long)
+		action_range = torch.zeros((self.opt.bs, 2), dtype=torch.long).to(self.device)
+		comm_range = torch.zeros((self.opt.bs, 2), dtype=torch.long).to(self.device)
 		action_range_data = [a_total, step, agent_idx]
 		for parent_conn in self.parent_conns:
 			parent_conn.send(("get_action_range", action_range_data))
@@ -250,7 +251,7 @@ class Arena:
 		#TODO for limiting communication to only agents who observe compromised hosts
 
 		if self.opt.game_comm_limited:
-			comm_limited = torch.zeros(self.opt.bs, dtype=torch.long)
+			comm_limited = torch.zeros(self.opt.bs, dtype=torch.long).to(self.device)
 			comm_data = [step, agent_idx]
 			for parent_conn in self.parent_conns:
 				parent_conn.send(("get_comm", comm_data))
@@ -263,7 +264,7 @@ class Arena:
 		
 	def get_stats(self, steps):
 		stats = DotDic({})
-		reward = torch.zeros(self.opt.bs)
+		reward = torch.zeros(self.opt.bs).to(self.device)
 		for bs, parent_conn in enumerate(self.parent_conns):
 			parent_conn.send(("get_stats", steps[bs]))
 
