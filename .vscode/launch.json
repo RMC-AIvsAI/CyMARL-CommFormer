@@ -13,7 +13,7 @@
             //"program": "pycomm/main.py",
             //"args": ["-c", "pycomm/config/switch_3_dial.json", "-m", "small"],
             "program": "pycomm/main.py",
-            "args": ["-c", "pycomm/config/cyborg_dial.json", "-m", "confidentiality_small"],
+            "args": ["-c", "pycomm/config/cyborg_dial.json", "-m", "confidentiality_small", "-r"],
             //"program": "learning-to-communicate/main.py",
             //"args": ["-c", "learning-to-communicate/config/switch_3_dial.json"],
             //"program": "pymarl2/main.py",

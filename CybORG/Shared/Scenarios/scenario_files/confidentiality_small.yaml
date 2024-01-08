@@ -71,6 +71,10 @@ Agents:
           Interfaces: All
           System info: All
           User info: All
+        Op_Host0:
+          Interfaces: All
+          System info: All
+          User info: All
         Op_Server0:
           Interfaces: All
           System info: All
@@ -86,6 +90,11 @@ Agents:
     starting_sessions:
       - hostname: Defender
         name: VeloDefender
+        parent: VeloServer
+        type: VelociraptorClient
+        username: ubuntu
+      - hostname: Op_Host0
+        name: VeloOp_Host0
         parent: VeloServer
         type: VelociraptorClient
         username: ubuntu
@@ -134,6 +143,15 @@ Hosts:
   Defender:
     AWS_Info: []
     image: Velociraptor_Server
+  Op_Host0:
+    AWS_Info: []
+    image: Gateway
+    info:
+      Op_Host0:
+        Interfaces: All
+    ConfidentialityValue: Medium
+    IntegrityValue: Medium
+    AvailabilityValue: Medium
   Op_Server0:
     AWS_Info: []
     image: OP_Server
@@ -167,6 +185,8 @@ Hosts:
     AWS_Info: []
     image: linux_user_host1
     info:
+      Op_Host0:
+        Interfaces: IP Address
       Op_Server0:
         Interfaces: IP Address
       User2:
@@ -185,6 +205,7 @@ Subnets:
     Size: 1
   Operational:
     Hosts:
+    - Op_Host0
     - Op_Server0
     NACLs:
       User:
@@ -193,7 +214,7 @@ Subnets:
       all:
         in: all
         out: all
-    Size: 1
+    Size: 2
   User:
     Hosts:
     - User0

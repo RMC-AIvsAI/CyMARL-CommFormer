@@ -29,16 +29,25 @@ class Remove(Action):
             #obs = Observation(True)
             # remove suspicious processes
             if self.hostname in parent_session.sus_pids:
+                obs_success = []
                 for sus_pid in parent_session.sus_pids[self.hostname]:
                     action = StopProcess(session=self.session, agent=self.agent, target_session=session.ident, pid=sus_pid)
-                    action.execute(state)
-                self.action_success = True
+                    sub_obs = action.execute(state)
+                    obs_success.append(sub_obs.action_succeeded)
+                if any(obs_success):
+                    self.action_success = True
+                else:
+                    self.action_success = False
+                    obs.set_success(False)
             else:
                 self.action_success = False
+                obs.set_success(False)
             # remove suspicious files
             return obs
         else:
-            return Observation(False)
+            self.action_success = False
+            obs.set_success(False)
+            return obs
 
     @property
     def cost(self):

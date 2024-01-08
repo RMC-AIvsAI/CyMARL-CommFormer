@@ -93,3 +93,9 @@ class VelociraptorServer(Session):
             self.sus_pids[hostname].append(pid)
         else:
             self.sus_pids[hostname] = [pid]
+    
+    def add_sus_file(self, hostname: str, path: str, name: str):
+        if hostname in self.sus_files:
+            self.sus_files[hostname].append([path, name])
+        else:
+            self.sus_files[hostname] = [[path, name]]

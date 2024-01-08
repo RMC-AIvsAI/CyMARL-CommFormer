@@ -2,6 +2,7 @@ from CybORG.Shared import Observation
 from CybORG.Simulator.Actions.ConcreteActions.LocalAction import LocalAction
 from CybORG.Simulator.Host import Host
 from CybORG.Simulator.Process import Process
+from CybORG.Simulator.File import File
 from CybORG.Simulator.State import State
 
 
@@ -25,18 +26,20 @@ class StopProcess(LocalAction):
             return obs
         proc = target_host.get_process(self.pid)
         if proc is not None:
+            file = target_host.get_file(proc.name, proc.path)
             if (proc.user != 'root' and proc.user != 'SYSTEM'):
                 obs.set_success(True)
-                self.kill_process(state, target_host, proc)
+                self.kill_process(state, target_host, proc, file)
             else:
                 obs.set_success(False)
         else:
             obs.set_success(False)
         return obs
 
-    def kill_process(self, state: State, host: Host, process: Process):
+    def kill_process(self, state: State, host: Host, process: Process, file: File):
         agent, session = state.get_session_from_pid(host.hostname, pid=process.pid)
         host.processes.remove(process)
+        host.files.remove(file) # Added this during DIAL implementation to enhance Analyse action so it doesnt give unwanted files even after proc is removed.
         if process.pid in [i['process'] for i in host.services.values()]:
             process.pid = None
             host.add_process(**process.__dict__)

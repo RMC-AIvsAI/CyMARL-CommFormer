@@ -18,7 +18,7 @@ class CybORGCNet(nn.Module):
 		self.opt = opt
 		self.comm_size = opt.game_comm_bits
 		self.init_param_range = (-0.08, 0.08)
-		self.max_host = (opt.game_obs_space - 1) // 5
+		self.hosts_per_agent = opt.hosts_per_agent
 		# Set up inputs
 		self.agent_lookup = nn.Embedding(opt.game_nagents, opt.model_rnn_size)
 
@@ -26,20 +26,13 @@ class CybORGCNet(nn.Module):
 		self.state_mlp= nn.ModuleList()
 
 		# Add Embeddings to the ModuleList based on the specified number of embeddings
-		for _ in range(self.max_host):
-			self.state_mlp.append(nn.Embedding(32, opt.model_rnn_size))
-
-		# Add an additional Embedding for n_steps
-		self.state_mlp.append(nn.Embedding(opt.nsteps, opt.model_rnn_size))
+		for _ in range(self.hosts_per_agent):
+			self.state_mlp.append(nn.Embedding(8, opt.model_rnn_size))
 
 		# Action aware
-		self.prev_message_lookup = None
 		if opt.model_action_aware:
 			if opt.model_dial:
-				self.prev_action_lookup = nn.Embedding(opt.game_action_space_total, opt.model_rnn_size)
-			else:
 				self.prev_action_lookup = nn.Embedding(opt.game_action_space + 1, opt.model_rnn_size)
-				self.prev_message_lookup = nn.Embedding(opt.game_comm_bits + 1, opt.model_rnn_size)
 
 		# Communication enabled
 		if opt.comm_enabled:
@@ -70,7 +63,8 @@ class CybORGCNet(nn.Module):
 
 	def reset_parameters(self):
 		opt = self.opt
-		self.messages_mlp.linear1.reset_parameters()
+		if opt.comm_enabled:
+			self.messages_mlp.linear1.reset_parameters()
 		self.rnn.reset_parameters()
 		self.agent_lookup.reset_parameters()
 
@@ -78,10 +72,8 @@ class CybORGCNet(nn.Module):
 		for state_embedding in self.state_mlp:
 			state_embedding.reset_parameters()
 
-		self.prev_action_lookup.reset_parameters()
-
-		if self.prev_message_lookup:
-			self.prev_message_lookup.reset_parameters()
+		if opt.model_action_aware:
+			self.prev_action_lookup.reset_parameters()
 
 		if opt.comm_enabled and opt.model_dial:
 			self.messages_mlp.batchnorm1.reset_parameters()
@@ -98,26 +90,21 @@ class CybORGCNet(nn.Module):
 
 		s_t = Variable(s_t)
 		hidden = Variable(hidden)
-		prev_message = None
 		if opt.model_dial:
 			if opt.model_action_aware:
 				prev_action = Variable(prev_action)
-		else:
-			if opt.model_action_aware:
-				prev_action, prev_message = prev_action
-				prev_action = Variable(prev_action)
-				prev_message = Variable(prev_message)
-			messages = Variable(messages)
+
+		messages = Variable(messages)
 		agent_index = Variable(agent_index)
 
 		z_a, z_o, z_u, z_m = [0]*4
 		z_a = self.agent_lookup(agent_index)
 
 		for i, state_embedding in enumerate(self.state_mlp):
-			start_index = i * 5
-			end_index = min(start_index + 5, s_t.size(1))
+			start_index = i * 3
+			end_index = min(start_index + 3, s_t.size(1))
 			
-			if end_index - start_index == 5:
+			if end_index - start_index == 3:
 				indices = torch.arange(end_index - start_index).flip(0).to(s_t.device)
 				module_input = (s_t[:, start_index:end_index] * (2**indices)).sum(dim=1)
 			else:
@@ -126,9 +113,9 @@ class CybORGCNet(nn.Module):
 
 		if opt.model_action_aware:
 			z_u = self.prev_action_lookup(prev_action)
-			if prev_message is not None:
-				z_u += self.prev_message_lookup(prev_message)
-		z_m = self.messages_mlp(messages.view(-1, self.comm_size))
+
+		if opt.comm_enabled:
+			z_m = self.messages_mlp(messages.view(-1, self.comm_size))
 
 		z = z_a + z_o + z_u + z_m
 		z = z.unsqueeze(1)

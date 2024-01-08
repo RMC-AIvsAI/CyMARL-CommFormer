@@ -226,6 +226,7 @@ class Host(Entity):
         for file in self.files:
             if file.name == name and (not path or file.path == path):
                 return file
+        return None
 
     def disable_user(self, username):
         user = self.get_user(username)

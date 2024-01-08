@@ -3,11 +3,12 @@ import json, csv, copy
 import torch
 
 from modules import REGISTRY as cnet_Registry
-from learner.agent import CNetAgent
-from runner.arena import Arena
+from pycomm.agent import CNetAgent
+from pycomm.arena import Arena
+from components.episode import Episode, PlayGame
 
 def init_action_and_comm_bits(opt):
-	opt.comm_enabled = opt.game_comm_bits > 0 and opt.game_nagents > 1
+	opt.comm_enabled = opt.game_comm_bits > 0
 	if opt.model_comm_narrow is None:
 		opt.model_comm_narrow = opt.model_dial
 	if not opt.model_comm_narrow and opt.game_comm_bits > 0:
@@ -39,45 +40,35 @@ def create_agents(opt, device):
 			cnet_target = copy.deepcopy(cnet)
 	return agents
 
-def save_episode_and_reward_to_csv(file, writer, e, r):
-	writer.writerow({'episode': e, 'reward': r})
+def save_episode_and_reward_to_csv(file, writer, train_e, train_r, test_e, test_r):
+	writer.writerow({'Train_Episode': train_e, 'Train_Reward': train_r, 'Test_Episode': test_e, 'Test_Reward': test_r})
 	file.flush()
 
-def save_episode_to_json(json_file, episode_index, episode):
-    episode_info = {
-        "episode_index": episode_index,
-        "steps": episode.steps.tolist(),
-        "rewards": episode.r.tolist(),
-        # Add more fields as needed
-    }
-    json.dump(episode_info, json_file)
-    json_file.write('\n')
-
-def run_trial(opt, env_args, result_path=None, result_path_json=None, verbose=False):
+# Linearly anneal epsilon rate
+def linear_schedule(opt, delta, timesteps):
+	return max(opt.eps_finish, opt.eps_start - delta * timesteps)
+	
+def run_trial(opt, env_args, result_path=None, verbose=False):
 	# Initialize action and comm bit settings
 	opt = init_opt(opt)
 	device = torch.device("cuda" if opt.device == 'cuda' and torch.cuda.is_available() else "cpu")
-	arena = Arena(opt, env_args)
-	agents = create_agents(arena.opt, device)
+	arena = Arena(opt, env_args, device)
+	agents = create_agents(opt, device)
 
 	if device == torch.device('cuda'):
 		for agent in agents:
 			if agent is not None:
 				agent.cuda()
 
-
 	test_callback = None
 	if result_path:
-		result_out = open(result_path, 'w')
-		#result_out_json = open(result_path_json, 'w')
+		result_out = open(result_path + '.csv', 'w')
 
 		csv_meta = '#' + json.dumps(opt) + '\n'
-		#json_meta = '#' + json.dumps(opt) + '\n'
 
 		result_out.write(csv_meta)
-		#result_out_json.write(json_meta)
 
-		writer = csv.DictWriter(result_out, fieldnames=['episode', 'reward'])
+		writer = csv.DictWriter(result_out, fieldnames=['Train_Episode', 'Train_Reward', 'Test_Episode', 'Test_Reward'])
 		writer.writeheader()
 		test_callback = partial(save_episode_and_reward_to_csv, result_out, writer)
 
@@ -85,40 +76,50 @@ def run_trial(opt, env_args, result_path=None, result_path_json=None, verbose=Fa
 	for agent in agents[1:]:
 		agent.reset()
 
+	buffer = Episode(opt, device)
 	rewards = []
+	delta = (opt.eps_start - opt.eps_finish) / opt.eps_anneal_time
+	total_timesteps = 0
 	for e in range(opt.nepisodes):
+		eps = linear_schedule(opt, delta, total_timesteps)
+		buffer.reset()
         # run episode
-		episode = arena.run_episode(agents, train_mode=True)
-		norm_r = average_reward(opt, episode, normalized=opt.normalized_reward)
+		for batch in range(opt.bs//opt.bs_run):
+			episode = arena.run_episode(agents, buffer, eps=eps, train_mode=True)
+			buffer.add_episode(episode)
+		episode_batch = buffer.combine_episodes()
+		total_timesteps += episode_batch.steps.sum().item()
+		norm_r = average_reward(opt, episode_batch, opt.bs, normalized=opt.normalized_reward)
 		if verbose:
-			print('train epoch:', e, 'avg steps:', episode.steps.float().mean().item(), 'avg reward:', norm_r)
+			print('train epoch:', e, 'avg steps:', episode_batch.steps.float().mean().item(), 'avg reward:', norm_r)
+		if test_callback:
+			test_callback(e, norm_r, 0, 0)
 		if opt.model_know_share:
-			agents[1].learn_from_episode(episode)
+			agents[1].learn_from_episode(episode_batch)
 		else:
 			for agent in agents[1:]:
-				agent.learn_from_episode(episode)
-		"""
-		if result_out_json:
-			save_episode_to_json(result_out_json, e, episode)
-		"""
+				agent.learn_from_episode(episode_batch)
+
 		if e % opt.step_test == 0:
-			episode = arena.run_episode(agents, train_mode=False)
-			norm_r = average_reward(opt, episode, normalized=opt.normalized_reward)
+			episode = arena.run_episode(agents, buffer, eps=0, train_mode=False)
+			norm_r = average_reward(opt, episode, opt.bs_run, normalized=opt.normalized_reward)
 			rewards.append(norm_r)
 			if test_callback:
-				test_callback(e, norm_r)
+				test_callback(0, 0, e, norm_r)
 			print('TEST EPOCH:', e, 'avg steps:', episode.steps.float().mean().item(), 'avg reward:', norm_r)
+			if e == opt.nepisodes - 1:
+				game = PlayGame(opt, episode, result_path + '.txt')
+				game.open_file()
+				game.play_game()
+				game.close_file()
 
 	if result_path:
 		result_out.close()
-	"""
-	if result_path_json:
-		result_out_json.close()
-	"""
-def average_reward(opt, episode, normalized=True):
-    reward = episode.r.sum()/(opt.bs * opt.game_nagents)
+
+def average_reward(opt, episode, batch_size, normalized=True):
+    reward = episode.r.sum()/(batch_size * opt.game_nagents)
     if normalized:
-        god_reward = episode.game_stats.god_reward.sum()/opt.bs
+        god_reward = episode.game_stats.god_reward.sum()/batch_size
         if reward == god_reward:
             reward = 1
         elif god_reward == 0:

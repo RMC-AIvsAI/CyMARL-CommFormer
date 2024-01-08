@@ -1,1 +1,0 @@
-from .switch_cnet import SwitchCNet

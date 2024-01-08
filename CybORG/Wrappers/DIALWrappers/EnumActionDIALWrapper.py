@@ -63,12 +63,15 @@ class EnumActionDIALWrapper(BaseWrapper):
                     param_list = new_param_list
             for p_dict in param_list:
                 possible_actions.append(action(**p_dict))
-
+        """
         if agent != 'Red':
             possible_actions_sorted = [possible_actions[0]] + sorted(possible_actions[1:], key=lambda x: x.hostname[-1])
         else:
             possible_actions_sorted = possible_actions
-
-        self.possible_actions[list(action_space['agent'].keys())[0]] = possible_actions_sorted
-        return len(possible_actions_sorted)
+        """
+        self.possible_actions[agent] = possible_actions
+        return len(possible_actions)
+    
+    def get_actions(self, agent):
+        return self.possible_actions[agent]
 

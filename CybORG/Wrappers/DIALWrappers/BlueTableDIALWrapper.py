@@ -88,7 +88,7 @@ class BlueTableDIALWrapper(BaseWrapper):
         action = self.get_last_action(agent=agent)
         if action is not None:
             name = action.__class__.__name__
-            hostname = action.get_params()['hostname'] if name in ('Restore','Remove') else None
+            hostname = action.get_params()['hostname'] if name in ('Analyse', 'Restore','Remove') else None
 
             if name == 'Restore':
                 self.blue_info[hostname][-1] = 'No'
@@ -96,6 +96,10 @@ class BlueTableDIALWrapper(BaseWrapper):
                 compromised = self.blue_info[hostname][-1]
                 if compromised != 'No':
                     self.blue_info[hostname][-1] = 'Unknown'
+            elif name == 'Analyse':
+                #Added this for DIAL implementation, previously after analyse action, with no malware state wasn't updating to reflect no exploits
+                #In process_anomalies function added an extra layer to detect user privileges. So if malware is detected, this will get updated
+                self.blue_info[hostname][-1] = 'No'
 
     def _detect_anomalies(self,obs):
         if self.baseline is None:
@@ -146,8 +150,12 @@ class BlueTableDIALWrapper(BaseWrapper):
                     info[hostid][-1] = 'User'
                     self.blue_info[hostid][-1] = 'User'
             if 'Files' in host_anomalies:
-                malware = [f['Density'] >= 0.9 for f in host_anomalies['Files']]
-                if any(malware):
+                priv_malware = [f['Density'] >= 0.9 for f in host_anomalies['Files']]
+                user_malware = [f['Density'] == 0.8 for f in host_anomalies['Files']]
+                if any(user_malware):
+                    info[hostid][-1] = 'User'
+                    self.blue_info[hostid][-1] = 'User'
+                if any(priv_malware):
                     info[hostid][-1] = 'Privileged'
                     self.blue_info[hostid][-1] = 'Privileged'
 
@@ -192,35 +200,21 @@ class BlueTableDIALWrapper(BaseWrapper):
 
     def _create_vector(self, agent, obs, success):
         table = self._create_blue_table(agent, obs, success)._rows
+        #print(table)
         # return empty if no obs provided
         if not len(table):
             return np.empty(shape=(0,))
 
         proto_vector = []
         # six flags for each host:
-        # 1 - is this host being scanned
-        # 2 - is this host uncompromised
-        # 3 - was this host exploited last turn
+        # 0 - is this host being scanned
+        # 1 - is this host compromised
+        # 2 - was this host exploited last turn
+        # 3 - does Red have at least User privleges (exploited, and never removed or restored)
         # 4 - is the status of this host unknown (has been exploited, and not restored or analyzed)
-        # 5 - does Red have at least User privleges (exploited, and never removed or restored)
-        # 6 - does Red have Root privleges (host was analyzed)
+        # 5 - does Red have Root privleges (host was analyzed)
         for row in table:
             vector = []
-            activity = row[1]
-            compromised = row[2]
-            # Flag 1
-            if activity == "Scan":
-                value = [1]
-            else:
-                value = [0]
-            #vector.extend(value)
-            # Flag 2
-            if compromised == "No":
-                value = [1]
-            else:
-                value = [0]
-            vector.extend(value)
-            # Flag 3
             activity = row[1]
             if activity == "Exploit":
                 value = [1]
@@ -228,23 +222,15 @@ class BlueTableDIALWrapper(BaseWrapper):
                 value = [0]
             vector.extend(value)
 
-            # Flag 4
-            if ((compromised != "No") and (compromised != "Privileged")):
-                value = [1]
+            compromised = row[2]
+            if compromised == "No":
+                value = [0, 0]
+            elif compromised == "User":
+                value = [0, 1]
+            elif compromised == "Privileged":
+                value = [1, 1]
             else:
-                value = [0]
-            vector.extend(value)
-            # Flag 5
-            if compromised == "User":
-                value = [1]
-            else:
-                value = [0]
-            vector.extend(value)
-            # Flag 6
-            if compromised == "Privileged":
-                value = [1]
-            else:
-                value = [0]
+                value = [1, 0] # Unknown
             vector.extend(value)
 
             proto_vector.append(vector)
@@ -277,6 +263,9 @@ class BlueTableDIALWrapper(BaseWrapper):
 
     def get_rewards(self):
         return self.get_attr('get_rewards')()
+    
+    def get_agent_hosts(self, agent):
+        return self.agent_hosts[agent]
 
 def create_table_from_vector(vector):
     table = PrettyTable()

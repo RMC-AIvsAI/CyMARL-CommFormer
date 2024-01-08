@@ -14,6 +14,7 @@ class Analyse(Action):
         self.agent = agent
         self.session = session
         self.hostname = hostname
+        self.action_success = False
 
     def execute(self, state) -> Observation:
         # perform monitor at start of action
@@ -31,9 +32,27 @@ class Analyse(Action):
                 sub_action = artifact(agent=self.agent, session=self.session, target_session=session.ident)
                 sub_obs = sub_action.execute(state)
                 obs.combine_obs(sub_obs)
+            """
+            if self.hostname in obs.data:
+                if 'Files' in obs.data[self.hostname]:
+                    self.action_success = True
+                else:
+                    obs.set_success(False)
+            else:
+                obs.set_success(False)
+            """
             return obs
         else:
-            return Observation(False)
+            obs.set_success(False)
+            return obs
+    """
+    @property
+    def cost(self):
+        if not self.action_success:
+            return -0.1
+        else:
+            return 0
+    """  
     def __str__(self):
         return f"{self.__class__.__name__} {self.hostname}"
     

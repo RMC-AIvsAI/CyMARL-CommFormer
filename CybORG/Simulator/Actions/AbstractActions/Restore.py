@@ -20,7 +20,8 @@ class Restore(Action):
         obs = monitor.execute(state)
 
         if self.session not in state.sessions[self.agent]:
-            return Observation(False)
+            obs.set_success(False)
+            return obs
         parent_session: VelociraptorServer = state.sessions[self.agent][self.session]
         # find relevant session on the chosen host
         sessions = [s for s in state.sessions[self.agent].values() if s.hostname == self.hostname]
@@ -33,7 +34,8 @@ class Restore(Action):
             # remove suspicious files
             return obs
         else:
-            return Observation(False)
+            obs.set_success(False)
+            return obs
 
     @property
     def cost(self):

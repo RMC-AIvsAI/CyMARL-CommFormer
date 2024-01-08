@@ -1,5 +1,6 @@
 import inspect
 import os
+import sys
 
 import torch
 from gym.spaces import flatdim
@@ -22,7 +23,6 @@ class CyborgEnv(MultiAgentEnv):
         self.n_agents = len(self._env.agents)
         self._agent_ids = list(self._env.agents)
         self._obs = None
-
         self.longest_action_space = max(self._env.action_spaces.values(), key=lambda x: x.n)
         self.longest_observation_space = max(
             self._env.observation_spaces.values(), key=lambda x: x.shape
@@ -30,12 +30,13 @@ class CyborgEnv(MultiAgentEnv):
         self.longest_turn_vector_obs = flatdim(self.longest_observation_space) + 1
         self.step_count = 0
         self.sender = []
+        self.r_t = 0.0
+        self.max_hosts = max(list(len(self.get_agent_hosts(agent)) for agent in self._agent_ids))
 
     def reset(self):
         # Returns initial observations and states
         self._obs = self._env.reset()
         self._obs = list(self._obs.values())
-        self._elapsed_steps = 0
         self.step_count = 0
 
         return self.get_state()
@@ -49,6 +50,7 @@ class CyborgEnv(MultiAgentEnv):
         self._obs = list(self._obs.values())
         self._update_sender()
         self.step_count += 1
+        self.r_t = list(reward.values())[0]
         return torch.tensor(list(reward.values())), int(all(done.values()))
 
     def get_obs(self):
@@ -72,11 +74,11 @@ class CyborgEnv(MultiAgentEnv):
                 agent_obs = self._obs[agent]
                 flattened_obs = sum(agent_obs, [])  # Concatenate sublists
                 padded_obs = flattened_obs + [0] * (self.get_obs_size() - len(flattened_obs))
-                padded_obs.extend([self.step_count])
+                #padded_obs.extend([self.step_count])
                 state.append(padded_obs)
             state_tensor = torch.tensor(state, dtype=torch.long)
             return state_tensor
-        return torch.zeros(self.n_agents, self.longest_turn_vector_obs)
+        return torch.zeros(self.n_agents, self.get_obs_size())
 
     def get_state_size(self):
         # Returns the shape of the state
@@ -130,7 +132,12 @@ class CyborgEnv(MultiAgentEnv):
 
         agent_name = self._agent_ids[agent_id]
         action_space = flatdim(self._env.action_space(agent_name))
-
+        
+        obs = self.get_obs_agent(agent_id)
+        flattened_obs = sum(obs, [])
+        #if sum(flattened_obs) == 0 and self.r_t == 0.0:
+            #action_range = torch.tensor([1, action_space-2], dtype=action_dtype)
+        #else:
         action_range = torch.tensor([1, action_space], dtype=action_dtype)
         comm_range = torch.tensor([self.get_total_actions() + 1, a_total], dtype=action_dtype)
         return action_range, comm_range
@@ -159,23 +166,26 @@ class CyborgEnv(MultiAgentEnv):
             return comm_lim
         return None
     
+    def get_agent_hosts(self, agent):
+        return self._env.get_agent_hosts(agent)
+
     def get_env_info(self):
-        env_info = {"obs_shape": self.longest_turn_vector_obs,
+        env_info = {"obs_shape": self.get_obs_size(),
                     "n_actions": self.get_total_actions(),
                     "n_agents": self.n_agents,
-                    "episode_limit": self.episode_limit}
+                    "episode_limit": self.episode_limit,
+                    "hosts_per_agent": self.max_hosts}
         return env_info
     
     def _wrap_env(self, env, wrapper_type):
-        if wrapper_type == 'table':
-            return MultiAgentDIALWrapper(BlueTableDIALWrapper(EnumActionDIALWrapper(env), output_mode='vector'))
-        elif wrapper_type == 'test':
-            return MultiAgentDIALTestWrapper(EnumActionDIALWrapper(env))
-        elif wrapper_type == 'pz':
-            return PettingZooParallelWrapper(env=env)
-        else:
-            return MultiAgentDIALWrapper(FixedFlatWrapper(EnumActionDIALWrapper(env)))
-        
+        try:
+            if wrapper_type == 'vector':
+                return MultiAgentDIALWrapper(BlueTableDIALWrapper(EnumActionDIALWrapper(env), output_mode='vector'))
+            else:
+                raise ValueError(f"Unsupported wrapper type: {wrapper_type}")
+        except ValueError as e:
+            print(f"Error: {e}")
+            sys.exit()
 
     def _create_env(self, map_name, time_limit, wrapper_type):
         # Get the directory containing cyborg

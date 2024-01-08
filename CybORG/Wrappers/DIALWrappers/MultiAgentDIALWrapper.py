@@ -154,6 +154,16 @@ class MultiAgentDIALWrapper(BaseWrapper):
             agent -> str
         '''
         return self.env.get_action_space(agent)
+    
+    def get_agent_hosts(self, agent):
+        hosts = self.env.get_agent_hosts(agent)
+        if 'success' in hosts:
+            hosts.remove('success')
+        if 'Defender' in hosts:
+            hosts.remove('Defender')
+        if 'User0' in hosts:
+            hosts.remove('User0')
+        return hosts
 
     def get_attr(self, attribute: str):
         return self.env.get_attr(attribute)
