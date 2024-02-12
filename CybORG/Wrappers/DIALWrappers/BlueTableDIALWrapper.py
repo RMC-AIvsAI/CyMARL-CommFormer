@@ -39,18 +39,37 @@ class BlueTableDIALWrapper(BaseWrapper):
 
         if not self.agent_hosts.get(agent, None):
             self.agent_hosts[agent] = list(obs.keys())
-
-        self._process_last_action(agent)
+        
+        #self._process_last_action(agent)
+        for host, info in self.blue_info.items():
+            if host in self.agent_hosts[agent]:
+                info[-2] = 'None'
 
         anomaly_obs = self._detect_anomalies(obs) if not baseline else obs
         del obs['success']
-        info = self._process_anomalies(anomaly_obs)
+        #info = self._process_anomalies(anomaly_obs)
+
+        action = self.get_last_action(agent=agent)
+        if action is not None:
+            name = action.__class__.__name__
+            hostname = action.get_params()['hostname'] if name in ('Analyse', 'Restore','Remove') else None
+            if name == 'Analyse':
+                self.blue_info[hostname][-1] = 'No'
+
+        self._process_anomalies(anomaly_obs)
+        """
         if baseline:
             for host in info:
                 info[host][-2] = 'None'
                 info[host][-1] = 'No'
                 self.blue_info[host][-1] = 'No'
         self.info = info
+        """
+        if action is not None:
+            if name == 'Restore':
+                self.blue_info[hostname][-1] = 'No'
+            if name == 'Remove':
+                self.blue_info[hostname][-1] = 'Unknown'
 
         if self.output_mode == 'table':
             return self._create_blue_table(success)
@@ -93,14 +112,15 @@ class BlueTableDIALWrapper(BaseWrapper):
             if name == 'Restore':
                 self.blue_info[hostname][-1] = 'No'
             elif name == 'Remove':
-                compromised = self.blue_info[hostname][-1]
-                if compromised != 'No':
-                    self.blue_info[hostname][-1] = 'Unknown'
+                #compromised = self.blue_info[hostname][-1]
+                #if compromised != 'No':
+                self.blue_info[hostname][-1] = 'Unknown'
+            """
             elif name == 'Analyse':
                 #Added this for DIAL implementation, previously after analyse action, with no malware state wasn't updating to reflect no exploits
                 #In process_anomalies function added an extra layer to detect user privileges. So if malware is detected, this will get updated
                 self.blue_info[hostname][-1] = 'No'
-
+            """
     def _detect_anomalies(self,obs):
         if self.baseline is None:
             raise TypeError('BlueTableWrapper was unable to establish baseline. This usually means the environment was not reset before calling the step method.')
@@ -140,26 +160,27 @@ class BlueTableDIALWrapper(BaseWrapper):
         return anomaly_dict
 
     def _process_anomalies(self,anomaly_dict):
-        info = deepcopy(self.blue_info)
+        #info = deepcopy(self.blue_info)
         for hostid, host_anomalies in anomaly_dict.items():
             assert len(host_anomalies) > 0
             if 'Processes' in host_anomalies:
                 connection_type = self._interpret_connections(host_anomalies['Processes'])
-                info[hostid][-2] = connection_type
+                #info[hostid][-2] = connection_type
+                self.blue_info[hostid][-2] = connection_type
                 if connection_type == 'Exploit':
-                    info[hostid][-1] = 'User'
+                    #info[hostid][-1] = 'User'
                     self.blue_info[hostid][-1] = 'User'
             if 'Files' in host_anomalies:
                 priv_malware = [f['Density'] >= 0.9 for f in host_anomalies['Files']]
                 user_malware = [f['Density'] == 0.8 for f in host_anomalies['Files']]
                 if any(user_malware):
-                    info[hostid][-1] = 'User'
+                    #info[hostid][-1] = 'User'
                     self.blue_info[hostid][-1] = 'User'
                 if any(priv_malware):
-                    info[hostid][-1] = 'Privileged'
+                    #info[hostid][-1] = 'Privileged'
                     self.blue_info[hostid][-1] = 'Privileged'
 
-        return info
+        #return info
 
     def _interpret_connections(self,activity:list):                
         num_connections = len(activity)
@@ -172,14 +193,15 @@ class BlueTableDIALWrapper(BaseWrapper):
         if None in remote_ports:
             remote_ports.remove(None)
 
-        if num_connections >= 3 and port_focus >=3:
+        #if num_connections >= 3 and port_focus >=3:
+        if num_connections == port_focus:
             anomaly = 'Scan'
         elif 4444 in remote_ports:
             anomaly = 'Exploit'
         elif num_connections >= 3 and port_focus == 1:
             anomaly = 'Exploit'
         else:
-            anomaly = 'Scan'
+            anomaly = 'None'
 
         return anomaly
 
@@ -189,10 +211,10 @@ class BlueTableDIALWrapper(BaseWrapper):
             'Activity',
             'Compromised'
             ])
-        for hostid in [hostid for hostid in self.info.keys() if hostid not in ['Defender', 'User0', 'Enterprise_router', 'Operational_router', 'User_router']]:
+        for hostid in [hostid for hostid in self.blue_info.keys() if hostid not in ['Defender', 'User0', 'Enterprise_router', 'Operational_router', 'User_router']]:
             if agent is not None:
                 if hostid in self.agent_hosts[agent]:
-                    table.add_row(self.info[hostid][2:])
+                    table.add_row(self.blue_info[hostid][2:])
         
         table.sortby = 'Hostname'
         table.success = success
