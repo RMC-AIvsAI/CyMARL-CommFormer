@@ -18,7 +18,9 @@ class Impact(Action):
         sessions = [s for s in state.sessions[self.agent].values() if s.hostname == self.hostname]
         if len(sessions) == 0:
             # no valid session could be found on chosen host
-            return Observation(success=False)
+            obs = Observation(success=False)
+            obs.add_session_info(hostid=self.hostname, agent=self.agent)
+            return obs
         # find if any session are already SYSTEM or root
         min_level = 0
         session = None

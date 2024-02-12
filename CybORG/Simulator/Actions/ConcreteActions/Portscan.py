@@ -22,6 +22,7 @@ class Portscan(RemoteAction):
         obs = Observation()
         if self.session not in state.sessions[self.agent]:
             obs.set_success(False)
+            obs.add_session_info(hostid=self.ip_address, agent=self.agent)
             return obs
         from_host = state.hosts[state.sessions['Red'][self.session].hostname]
         session = state.sessions['Red'][self.session]

@@ -51,7 +51,7 @@ class CyborgEnv(MultiAgentEnv):
         self._update_sender()
         self.step_count += 1
         self.r_t = list(reward.values())[0]
-        return torch.tensor(list(reward.values())), int(all(done.values()))
+        return torch.tensor(list(reward.values())), int(all(done.values())), str(info['Red']['action'])
 
     def get_obs(self):
         # Returns all agent observations in a list

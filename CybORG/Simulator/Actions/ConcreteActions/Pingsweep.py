@@ -33,6 +33,7 @@ class Pingsweep(RemoteAction):
         # Check the session running the code exists and is active.
         if self.session not in state.sessions[self.agent]:
             obs.set_success(False)
+            obs.add_session_info(hostid=self.subnet, agent=self.agent)
             return obs
         from_host = state.hosts[state.sessions[self.agent][self.session].hostname]
         session = state.sessions[self.agent][self.session]

@@ -1,11 +1,6 @@
-from components.episode import PlayGame
-import torch
-from utils.dotdic import DotDic
+my_dict = {'User0': 0, 'User2': 1, 'User1': 2}
+search_value = 5
 
+if search_value in my_dict['User0']:
+    print("success")
 
-episode = DotDic({})
-episode.s_t = []
-episode.r_t = []
-episode.a_t = []
-
-game = PlayGame(episode, "pycomm/games/game_info.txt")

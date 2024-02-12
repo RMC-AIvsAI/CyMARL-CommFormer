@@ -17,3 +17,4 @@ from .CyMARLAgents.BlueAvailabilityAgent import BlueAvailabilityRemoveAgent, Blu
 from .CyMARLAgents.RedConfidentialityAgent import RedConfidentialityAgent
 from .CyMARLAgents.RedIntegrityAgent import RedIntegrityAgent
 from .CyMARLAgents.RedAvailabilityAgent import RedAvailabilityAgent
+from .CyMARLAgents.RedDialAgent import RedDialAgent

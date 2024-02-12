@@ -28,9 +28,9 @@ for n in range(30):
     combined_actions[0] = action_agent_1
     combined_actions[1] = action_agent_2
 
-    reward, terminal = env.step(combined_actions)
+    reward, terminal, info= env.step(combined_actions)
     state = env.get_state()
-
+    print("Red Action:", info)
     print("Reward:", reward)
 
     print("State:", state)

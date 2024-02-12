@@ -37,6 +37,49 @@ class Session(Entity):
     def dead_child(self, child_id: int):
         self.children.pop(child_id)
 
+class Ssh(Session):
+    # a session that remembers previously seen information that can be used by actions
+    # Basically a clone of RedAbstract Shell. Created this for DIAL to allow for a more realistic red attacks
+    def __init__(self, ident: int, hostname: str, username: str, agent: str,
+                 pid: int, timeout: int = 0, session_type: str = 'shell', active: bool = True, parent=None, name=None):
+        super().__init__(ident, hostname, username, agent, pid, timeout, session_type, active, parent, name)
+        self.ports = {} # a mapping of IP Addresses to previously seen open ports
+        self.operating_system = {} # a mapping of hostnames to os types
+        self.ot_service = None
+
+    def addport(self, ip_address: IPv4Address, port: int):
+        if ip_address in self.ports:
+            self.ports[ip_address].append(port)
+        else:
+            self.ports[ip_address] = [port]
+
+    def clearports(self, ip_address: IPv4Address):
+                self.ports[ip_address] = []
+
+    def addos(self, hostname: str, os: OperatingSystemType):
+        self.operating_system[hostname] = os
+
+class RedReverseShell(Session):
+    # a session that remembers previously seen information that can be used by actions
+    # Basically a clone of RedAbstract Shell. Created this for DIAL to allow for a more realistic red attacks
+    def __init__(self, ident: int, hostname: str, username: str, agent: str,
+                 pid: int, timeout: int = 0, session_type: str = 'shell', active: bool = True, parent=None, name=None):
+        super().__init__(ident, hostname, username, agent, pid, timeout, session_type, active, parent, name)
+        self.ports = {} # a mapping of IP Addresses to previously seen open ports
+        self.operating_system = {} # a mapping of hostnames to os types
+        self.ot_service = None
+
+    def addport(self, ip_address: IPv4Address, port: int):
+        if ip_address in self.ports:
+            self.ports[ip_address].append(port)
+        else:
+            self.ports[ip_address] = [port]
+
+    def clearports(self, ip_address: IPv4Address):
+                self.ports[ip_address] = []
+
+    def addos(self, hostname: str, os: OperatingSystemType):
+        self.operating_system[hostname] = os
 
 class RedAbstractSession(Session):
     # a session that remembers previously seen information that can be used by actions

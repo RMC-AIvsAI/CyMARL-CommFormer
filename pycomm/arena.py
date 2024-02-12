@@ -129,8 +129,9 @@ class Arena:
 
 			# Update game state
 			a_t = episode.step_records[step].a_t
-			episode.step_records[step].r_t, episode.step_records[step].terminal, state = \
+			episode.step_records[step].r_t, episode.step_records[step].terminal, state, info = \
 				self.get_step(a_t)
+			episode.step_records[step].red_actions.extend(info)
 
 			# Accumulate steps
 			if step < opt.nsteps:
@@ -201,6 +202,7 @@ class Arena:
 		reward = torch.zeros(self.opt.bs_run, self.opt.game_nagents, dtype=torch.float).to(self.device)
 		terminal = torch.zeros(self.opt.bs_run, dtype=torch.long).to(self.device)
 		state = torch.zeros(self.opt.bs_run, self.opt.game_nagents, self.opt.game_obs_space).to(self.device)
+		info = []
 		for bs, parent_conn in enumerate(self.parent_conns):
 			parent_conn.send(("step", actions[bs]))
 
@@ -211,8 +213,9 @@ class Arena:
 			state[bs] = data["state"]
 			data_dtype = data["state"].dtype
 			terminal[bs] = data["terminated"]
+			info.append(data["info"])
 
-		return reward, terminal, state.to(dtype=data_dtype)
+		return reward, terminal, state.to(dtype=data_dtype), info
 	
 	def get_action_range(self, a_total, step, agent_idx):
 		#TODO incase if implementing valid action check which will result in action space being different for all agents
@@ -269,7 +272,7 @@ def env_worker(remote, env_fn):
 			if cmd == "step":
 				actions = data
 				# Take a step in the environment
-				reward, terminated = env.step(actions)
+				reward, terminated, info = env.step(actions)
 				# Return the state
 				state = env.get_state()
 				remote.send({
@@ -278,7 +281,7 @@ def env_worker(remote, env_fn):
 					# Rest of the data for the current timestep
 					"reward": reward,
 					"terminated": terminated,
-					#"info": env_info
+					"info": info
 				})
 			elif cmd == "reset":
 				state = env.reset()

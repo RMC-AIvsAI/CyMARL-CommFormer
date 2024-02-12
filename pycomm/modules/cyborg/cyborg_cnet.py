@@ -19,6 +19,9 @@ class CybORGCNet(nn.Module):
 		self.comm_size = opt.game_comm_bits
 		self.init_param_range = (-0.08, 0.08)
 		self.hosts_per_agent = opt.hosts_per_agent
+		self.obs_size = opt.game_obs_space
+		self.obs_per_host = int(self.obs_size/self.hosts_per_agent)
+		self.state_emb_size = self.obs_per_host ** 2
 		# Set up inputs
 		self.agent_lookup = nn.Embedding(opt.game_nagents, opt.model_rnn_size)
 
@@ -27,7 +30,7 @@ class CybORGCNet(nn.Module):
 
 		# Add Embeddings to the ModuleList based on the specified number of embeddings
 		for _ in range(self.hosts_per_agent):
-			self.state_mlp.append(nn.Embedding(8, opt.model_rnn_size))
+			self.state_mlp.append(nn.Embedding(self.state_emb_size, opt.model_rnn_size))
 
 		# Action aware
 		if opt.model_action_aware:
@@ -101,10 +104,10 @@ class CybORGCNet(nn.Module):
 		z_a = self.agent_lookup(agent_index)
 
 		for i, state_embedding in enumerate(self.state_mlp):
-			start_index = i * 3
-			end_index = min(start_index + 3, s_t.size(1))
+			start_index = i * self.obs_per_host
+			end_index = min(start_index + self.obs_per_host, s_t.size(1))
 			
-			if end_index - start_index == 3:
+			if end_index - start_index == self.obs_per_host:
 				indices = torch.arange(end_index - start_index).flip(0).to(s_t.device)
 				module_input = (s_t[:, start_index:end_index] * (2**indices)).sum(dim=1)
 			else:

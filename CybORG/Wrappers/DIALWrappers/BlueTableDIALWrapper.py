@@ -216,10 +216,12 @@ class BlueTableDIALWrapper(BaseWrapper):
         for row in table:
             vector = []
             activity = row[1]
-            if activity == "Exploit":
-                value = [1]
-            else:
-                value = [0]
+            if activity == 'None':
+                value = [0,0]
+            elif activity == 'Scan':
+                value = [1,0]
+            elif activity == "Exploit":
+                value = [1,1]
             vector.extend(value)
 
             compromised = row[2]

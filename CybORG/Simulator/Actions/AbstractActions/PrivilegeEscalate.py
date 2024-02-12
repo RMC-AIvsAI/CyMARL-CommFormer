@@ -39,12 +39,11 @@ class DefaultEscalateActionSelector(EscalateActionSelector):
     Attempts to use Juicy Potato if windows, otherwise V4l2 kernel
     """
     def get_escalate_action(self, *, state: State, session: int, target_session: int,
-            agent: str, hostname: str) -> \
+            agent: str, hostname: str, os_type: OperatingSystemType) -> \
                     Optional[EscalateAction]:
-        if hostname in state.sessions[agent][session].operating_system:
-            if state.sessions[agent][session].operating_system[hostname] == OperatingSystemType.WINDOWS:
-                return JuicyPotato(session=session, target_session=target_session,
-                        agent=agent)
+        #if hostname in state.sessions[agent][session].operating_system:
+        if os_type == OperatingSystemType.WINDOWS:
+            return JuicyPotato(session=session, target_session=target_session, agent=agent)
 
         return V4L2KernelExploit(session=session, target_session=target_session,
                 agent=agent)
@@ -53,14 +52,13 @@ _default_escalate_action_selector = DefaultEscalateActionSelector()
 
 class PrivilegeEscalate(Action):
     """Selects and executes a privilege escalation action on a host"""
-    def __init__(self, hostname: str, session: int, agent: str):
+    def __init__(self, hostname: str, session: int, agent: str, os_type: OperatingSystemType):
         super().__init__()
         self.agent = agent
         self.session = session
         self.hostname = hostname
+        self.os_type = os_type
         self.escalate_action_selector = _default_escalate_action_selector
-
-    
 
     def __perform_escalate(self, state:State, sessions:List[Session]) -> Tuple[Observation, int]:
         target_session = state.np_random.choice(sessions)
@@ -78,7 +76,7 @@ class PrivilegeEscalate(Action):
 
         sub_action = self.escalate_action_selector.get_escalate_action(
                 state=state, session=self.session, target_session=target_session_ident,
-                agent=self.agent, hostname=self.hostname)
+                agent=self.agent, hostname=self.hostname, os_type=self.os_type)
 
         self.sub_action = sub_action
 
@@ -90,12 +88,14 @@ class PrivilegeEscalate(Action):
     def execute(self, state: State) -> Observation:
         # find session on the chosen host
         sessions = [s for s in state.sessions[self.agent].values() if s.hostname == self.hostname]
+        obs = Observation(False)
         if len(sessions) == 0:
             # no valid session could be found on chosen host
-            return Observation(success=False)
+            obs.add_session_info(hostid=self.hostname, agent=self.agent)
+            return obs
         # find if any session are already SYSTEM or root
         target_session = None
-        obs = Observation(False)
+        
         for sess in sessions:
             # else find if session is Admin or sudo
             if sess.username in ('root', 'SYSTEM'):
@@ -118,7 +118,7 @@ class PrivilegeEscalate(Action):
                 host_processes = host['Processes']
                 for proc in host_processes:
                     if proc.get('Service Name') == 'OTService':
-                        state.sessions[self.agent][self.session].ot_service = 'OTService'
+                        state.sessions[self.agent][target_session].ot_service = 'OTService'
                         break
             except KeyError:
                 pass

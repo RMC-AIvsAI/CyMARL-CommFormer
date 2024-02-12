@@ -20,7 +20,10 @@ class Analyse(Action):
         # perform monitor at start of action
         monitor = Monitor(session=self.session, agent=self.agent)
         obs = monitor.execute(state)
-        
+        if any(state.hosts[self.hostname].sessions['Red']):
+            self.action_success = True
+        else:
+            self.action_success = False
         artefacts = [DensityScout, SigCheck]
         # find relevant session on the chosen host
         sessions = [s for s in state.sessions[self.agent].values() if s.hostname == self.hostname]
@@ -45,14 +48,14 @@ class Analyse(Action):
         else:
             obs.set_success(False)
             return obs
-    """
+
     @property
     def cost(self):
         if not self.action_success:
             return -0.1
         else:
             return 0
-    """  
+
     def __str__(self):
         return f"{self.__class__.__name__} {self.hostname}"
     

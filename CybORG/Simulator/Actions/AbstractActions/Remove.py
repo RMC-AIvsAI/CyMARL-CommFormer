@@ -20,6 +20,11 @@ class Remove(Action):
         # perform monitor at start of action
         monitor = Monitor(session=self.session, agent=self.agent)
         obs = monitor.execute(state)
+        # If host is not compromised then consider this action a failure
+        if any(state.hosts[self.hostname].sessions['Red']):
+            self.action_success = True
+        else:
+            self.action_success = False
 
         parent_session: VelociraptorServer = state.sessions[self.agent][self.session]
         # find relevant session on the chosen host
@@ -34,13 +39,9 @@ class Remove(Action):
                     action = StopProcess(session=self.session, agent=self.agent, target_session=session.ident, pid=sus_pid)
                     sub_obs = action.execute(state)
                     obs_success.append(sub_obs.action_succeeded)
-                if any(obs_success):
-                    self.action_success = True
-                else:
-                    self.action_success = False
+                if not any(obs_success):
                     obs.set_success(False)
             else:
-                self.action_success = False
                 obs.set_success(False)
             # remove suspicious files
             return obs

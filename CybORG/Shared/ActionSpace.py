@@ -8,7 +8,7 @@ from CybORG.Shared.Enums import SessionType
 
 MAX_SUBNETS = 10
 MAX_ADDRESSES = 10
-MAX_SESSIONS = 8
+MAX_SESSIONS = 15
 MAX_USERNAMES = 10
 MAX_PASSWORDS = 10
 MAX_PROCESSES = 50
@@ -27,7 +27,7 @@ class ActionSpace(CybORGLogger):
         self.action_params = {}
         for action in self.actions:
             self.action_params[action] = signature(action).parameters
-        self.allowed_subnets = allowed_subnets
+        self.allowed_subnets = {i: True for i in allowed_subnets}
         self.subnet = {}
         self.ip_address = {}
         self.server_session = {}
@@ -67,7 +67,8 @@ class ActionSpace(CybORGLogger):
             'port': self.port,
             'target_session': self.client_session,
             'agent': self.agent,
-            'hostname': self.hostname
+            'hostname': self.hostname,
+            'allowed_subnets': self.allowed_subnets
         }
         return max_action
 
@@ -157,7 +158,9 @@ class ActionSpace(CybORGLogger):
                                                                       SessionType.RED_ABSTRACT_SESSION,
                                                                       SessionType.GREY_SESSION,
                                                                       SessionType.BLUE_DRONE_SESSION,
-                                                                      SessionType.RED_DRONE_SESSION)):
+                                                                      SessionType.RED_DRONE_SESSION,
+                                                                      SessionType.SSH,
+                                                                      SessionType.RED_REVERSE_SHELL)):
                             self.server_session[session["ID"]] = known
 
                         self.client_session[session["ID"]] = known

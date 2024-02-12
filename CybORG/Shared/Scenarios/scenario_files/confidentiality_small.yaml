@@ -131,7 +131,7 @@ Agents:
     - ExploitRemoteService
     - PrivilegeEscalate
     - Impact
-    agent_type: RedConfidentialityAgent
+    agent_type: RedDialAgent
     reward_calculator_type: RedConfidentiality
     starting_sessions:
     - hostname: User0
@@ -186,9 +186,7 @@ Hosts:
     image: linux_user_host1
     info:
       Op_Host0:
-        Interfaces: IP Address
-      Op_Server0:
-        Interfaces: IP Address
+        Interfaces: Subnet
       User2:
         Interfaces: All
     ConfidentialityValue: Low

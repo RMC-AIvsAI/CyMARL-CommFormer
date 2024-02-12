@@ -68,6 +68,10 @@ class State(CybORGLogger):
                             for interface in host.interfaces:
                                 if interface.name != 'lo':
                                     true_obs.add_interface_info(hostid=hostname, ip_address=interface.ip_address)
+                        elif info[hostname]['Interfaces'] == 'Subnet':
+                            for interface in host.interfaces:
+                                if interface.name != 'lo':
+                                    true_obs.add_interface_info(hostid=hostname, subnet=interface.subnet)
                         else:
                             raise NotImplementedError(f"{info[hostname]['Interfaces']} cannot be collected from state")
                     if 'Sessions' in info[hostname]:

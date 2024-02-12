@@ -16,7 +16,7 @@ from CybORG.Simulator.File import File
 from CybORG.Simulator.Interface import Interface
 from CybORG.Simulator.MSFServerSession import MSFServerSession
 from CybORG.Simulator.Process import Process
-from CybORG.Simulator.Session import VelociraptorServer, RedAbstractSession, Session
+from CybORG.Simulator.Session import VelociraptorServer, RedAbstractSession, Ssh, RedReverseShell, Session
 
 from CybORG.Simulator.User import User
 
@@ -122,6 +122,12 @@ class Host(Entity):
         elif session_type == 'RedAbstractSession':
             new_session = RedAbstractSession(hostname=self.hostname, agent=agent, username=username, ident=ident, pid=pid,
                                              timeout=timeout, session_type=session_type, name=name)
+        elif session_type == 'SSH':
+            new_session = Ssh(hostname=self.hostname, agent=agent, username=username, ident=ident, pid=pid,
+                                             timeout=timeout, parent=parent, session_type=session_type, name=name)
+        elif session_type == 'red_reverse_shell':
+            new_session = RedReverseShell(hostname=self.hostname, agent=agent, username=username, ident=ident, pid=pid,
+                                             timeout=timeout, parent=parent, session_type=session_type, name=name)
         elif session_type == 'VelociraptorServer':
             new_session = VelociraptorServer(hostname=self.hostname, agent=agent, username=username, ident=ident, pid=pid,
                                              timeout=timeout, session_type=session_type, name=name, artifacts=artifacts)

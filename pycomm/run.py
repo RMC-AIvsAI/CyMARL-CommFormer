@@ -1,6 +1,7 @@
 from functools import partial
 import json, csv, copy
 import torch
+import time
 
 from modules import REGISTRY as cnet_Registry
 from pycomm.agent import CNetAgent
@@ -75,7 +76,7 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 
 	for agent in agents[1:]:
 		agent.reset()
-
+	start_time = time.time()
 	buffer = Episode(opt, device)
 	rewards = []
 	delta = (opt.eps_start - opt.eps_finish) / opt.eps_anneal_time
@@ -108,11 +109,18 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 				test_callback(0, 0, e, norm_r)
 			print('TEST EPOCH:', e, 'avg steps:', episode.steps.float().mean().item(), 'avg reward:', norm_r)
 			if e == opt.nepisodes - 1:
-				game = PlayGame(opt, episode, result_path + '.txt')
+				end_time = time.time()
+				game = PlayGame(opt, result_path + '.txt')
 				game.open_file()
-				game.play_game()
+				for _ in range(1000):
+					episode = arena.run_episode(agents, buffer, eps=0, train_mode=False)
+					game.play_game(episode)
 				game.close_file()
+	total_time = end_time - start_time
 
+	result_out.write("Start Time: " + str(start_time) + "\n")
+	result_out.write("End Time: " + str(end_time) + "\n")
+	result_out.write("Total_Time: " + str(total_time) + "\n")
 	if result_path:
 		result_out.close()
 

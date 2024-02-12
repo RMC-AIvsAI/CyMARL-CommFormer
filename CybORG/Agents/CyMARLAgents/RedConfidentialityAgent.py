@@ -25,6 +25,18 @@ class RedConfidentialityAgent(BaseAgent):
     def get_action(self, observation, action_space):
         """gets an action from the agent that should be performed based on the agent's internal state and provided observation and action space"""
 
+        # start by checking if User0 already in escaleted hosts and if not then add it to escalated hosts, exploited IPs and scanned IPs
+        if 'User0' not in self.escalated_hosts:
+            addresses = [i for i in action_space["ip_address"]]
+            for address in addresses:
+                if action_space["ip_address"][address]:
+                    self.scanned_ips.append(address)
+                    self.exploited_ips[address] = self.step_count
+                    self.host_ip_map[[value['System info']['Hostname'] for key, value in observation.items()
+                                  if key != 'success' and 'System info' in value
+                                  and 'Hostname' in value['System info']][0]] = address
+            self.escalated_hosts.append('User0')
+            
         self.step_count += 1
         self._process_success(observation)
 

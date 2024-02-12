@@ -75,6 +75,7 @@ class Episode:
 
         # Track actions at time t per agent
         record.a_t = torch.zeros(batch_size, opt.game_nagents, dtype=torch.long).to(self.device)
+        record.red_actions = []
 
         # Track messages sent at time t per agent
         if opt.comm_enabled:
@@ -95,9 +96,8 @@ class Episode:
         return record
     
 class PlayGame:
-    def __init__(self, opt, episode, filename):
+    def __init__(self, opt, filename):
         self.opt = opt
-        self.episode = episode
         self.filename = filename
         self.file = None
         self._setup()
@@ -128,17 +128,15 @@ class PlayGame:
         self.action_dict_2[6] = "Analyse Op_Host0"
         self.action_dict_2[7] = "Analyse Op_Server0"
 
-    def play_game(self):
+    def play_game(self, episode):
         if self.file is not None:
             for i in range(8):
                 previous_step_record = None
-                for j, step_record in enumerate(self.episode.step_records):
+                for j, step_record in enumerate(episode.step_records):
                     self.file.write(f"---- Turn {j} ----\n")
                     if j != 0:
-                        if self.opt.comm_enabled:
-                            message = previous_step_record.comm[i].tolist()
-                        
-                            self.file.write(f"Message sent: {message}\n")
+                        r_a = previous_step_record.red_actions[i]
+                        self.file.write(f"Red Action: {r_a}\n")
 
                         a = previous_step_record.a_t[i].tolist()
                         actions = [self.action_dict_1[a[0]], self.action_dict_2[a[1]]]
@@ -147,6 +145,10 @@ class PlayGame:
                         reward = previous_step_record.r_t[i].tolist()
                         self.file.write(f"Reward: {reward}\n")
 
+                    if self.opt.comm_enabled:
+                        message = step_record.comm[i].tolist()
+                        self.file.write(f"Message sent: {message}\n")
+
                     if step_record.s_t is not None:
                         state = step_record.s_t[i].tolist()
                         self.file.write(f"State: {state}\n")
@@ -154,7 +156,7 @@ class PlayGame:
                     previous_step_record = step_record
 
                 self.file.write("\n")
-                total_reward = self.episode.r[i].sum().item()/2
+                total_reward = episode.r[i].sum().item()/2
                 self.file.write(f"Total Reward: {total_reward}\n")
                 self.file.write("\n")          
                     

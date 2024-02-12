@@ -33,12 +33,16 @@ class EnumActionDIALWrapper(BaseWrapper):
         temp = {}
         params = ['action']
         agent = list(action_space['agent'].keys())[0]
+        if agent == 'Red':
+            return None
         for i, action in enumerate(action_space['action']):
             if action not in self.action_signature:
                 self.action_signature[action] = inspect.signature(action).parameters
             param_list = [{}]
             for p in self.action_signature[action]:
                 if p == 'priority':
+                    continue
+                if p == 'ports':
                     continue
                 temp[p] = []
                 if p not in params:
