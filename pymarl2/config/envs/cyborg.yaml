@@ -3,7 +3,7 @@ env: "cyborg"
 env_args:
   key: cyborg
   map_name: cyborg
-  wrapper_type: raw
+  wrapper_type: table
   no_obs: False
   action_masking: False
   episode_trace: False

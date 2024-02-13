@@ -79,12 +79,12 @@ class Arena:
 				comm = None
 				if opt.comm_enabled:
 					comm = episode.step_records[step].comm.clone()
-					comm_limited = self.get_comm_limited(step, agent.id)
+					comm_limited = self.get_comm_limited(step, agent_idx)
 					if comm_limited is not None:
 						comm_lim = torch.zeros(opt.bs_run, 1, opt.game_comm_bits)
 						for b in range(opt.bs_run):
 							if comm_limited[b].item() > 0:
-								comm_lim[b] = comm[b][comm_limited[b] - 1]
+								comm_lim[b] = comm[b][comm_limited[b]]
 						comm = comm_lim
 					else:
 						mask = torch.ones(opt.game_nagents, dtype=torch.bool)
@@ -155,12 +155,12 @@ class Arena:
 
 					if opt.comm_enabled and opt.model_dial:
 						comm_target = episode.step_records[step].comm_target.clone()
-						comm_limited = self.get_comm_limited(step, agent.id)
+						comm_limited = self.get_comm_limited(step, agent_idx)
 						if comm_limited is not None:
 							comm_lim = torch.zeros(opt.bs_run, 1, opt.game_comm_bits)
 							for b in range(opt.bs_run):
 								if comm_limited[b].item() > 0:
-									comm_lim[b] = comm_target[b][comm_limited[b] - 1]
+									comm_lim[b] = comm_target[b][comm_limited[b]]
 							comm_target = comm_lim
 						else:
 							mask = torch.ones(opt.game_nagents, dtype=torch.bool)
@@ -237,6 +237,7 @@ class Arena:
 	
 	def get_comm_limited(self, step, agent_idx):
 		#TODO for limiting communication to only agents who observe compromised hosts
+		# Currently implemented for only 2 agents, where messages are received from one another 
 
 		if self.opt.game_comm_limited:
 			comm_limited = torch.zeros(self.opt.bs_run, dtype=torch.long).to(self.device)

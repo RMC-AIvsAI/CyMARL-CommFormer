@@ -69,7 +69,9 @@ class BlueTableDIALWrapper(BaseWrapper):
             if name == 'Restore':
                 self.blue_info[hostname][-1] = 'No'
             if name == 'Remove':
-                self.blue_info[hostname][-1] = 'Unknown'
+                compromised = self.blue_info[hostname][-1]
+                if compromised != 'No':
+                    self.blue_info[hostname][-1] = 'Unknown'
 
         if self.output_mode == 'table':
             return self._create_blue_table(success)

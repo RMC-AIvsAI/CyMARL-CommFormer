@@ -8,7 +8,7 @@ from gym.spaces import flatdim
 from CybORG import CybORG
 from CybORG.Shared.Scenarios.FileReaderScenarioGenerator import \
     FileReaderScenarioGenerator
-from CybORG.Wrappers import MultiAgentGymWrapper, BlueTableWrapper, EnumActionWrapper, FixedFlatWrapper
+from CybORG.Wrappers import MultiAgentGymWrapper, BlueTableWrapper, EnumActionWrapper, FixedFlatWrapper, BlueTableDIALWrapper, EnumActionDIALWrapper, MultiAgentDIALWrapper
 
 
 class CyborgMultiAgentEnv(MultiAgentEnv):
@@ -16,7 +16,6 @@ class CyborgMultiAgentEnv(MultiAgentEnv):
     def __init__(self, map_name, time_limit=100, action_masking=False, wrapper_type='raw', no_obs=False, **kwargs):
         self.episode_limit = time_limit
         self.action_masking = action_masking
-        self.no_obs = no_obs
         self._env = self._create_env(map_name, time_limit, wrapper_type)
         
         self.n_agents = len(self._env.agents)
@@ -36,14 +35,19 @@ class CyborgMultiAgentEnv(MultiAgentEnv):
         action_dict = dict(zip(self._agent_ids, actions))
         self._obs, reward, done, self.info = self._env.step(action_dict)
         self._obs = list(self._obs.values())
-        if self.no_obs:
-            self._obs = [[-1.0 for _ in range(len(self._obs[i]))] for i in  range(len(self._obs))]
 
         return float(sum(reward.values()) / self.n_agents), all(done.values()), {}
 
     def get_obs(self):
         """ Returns all agent observations in a list """
-        return self._obs
+        obs = []
+        for agent in range(self.n_agents):
+            agent_obs = self._obs[agent]
+            flattened_obs = sum(agent_obs, [])  # Concatenate sublists
+            padded_obs = flattened_obs + [0] * (self.get_obs_size() - len(flattened_obs))
+            #padded_obs.extend([self.step_count])
+            obs.append(padded_obs)
+        return obs
 
     def get_obs_agent(self, agent_id):
         """ Returns observation for agent_id """
@@ -54,8 +58,7 @@ class CyborgMultiAgentEnv(MultiAgentEnv):
         return flatdim(self.longest_observation_space)
 
     def get_state(self):
-        empty_state = np.ones_like(self._obs) * -1
-        return np.concatenate(empty_state, axis=0).astype(np.float32)
+        return np.concatenate(self._obs, axis=0).flatten().astype(np.float32)
 
     def get_state_size(self):
         """ Returns the shape of the state"""
@@ -118,7 +121,7 @@ class CyborgMultiAgentEnv(MultiAgentEnv):
 
     def _wrap_env(self, env, wrapper_type):
         if wrapper_type == 'table':
-            return MultiAgentGymWrapper(BlueTableWrapper(EnumActionWrapper(env), output_mode='vector'))
+            return MultiAgentDIALWrapper(BlueTableDIALWrapper(EnumActionDIALWrapper(env), output_mode='vector'))
         else:
             return MultiAgentGymWrapper(FixedFlatWrapper(EnumActionWrapper(env)))
 

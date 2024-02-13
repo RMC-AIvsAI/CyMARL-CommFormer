@@ -153,18 +153,22 @@ class CyborgEnv(MultiAgentEnv):
             sender.append(value)
         self.sender.append(sender)
 
-    def get_comm_limited(self, comm_limited, step, agent_id):
-        if comm_limited:
-            comm_lim = {}
-            agent_messages = []
-            if step > 0:
-                agent_messages = self.sender[step - 1]
-                for i in range(len(agent_messages)):
-                    if i != agent_id:
-                        comm_lim[i] = agent_messages[i]
-            print(comm_lim)
-            return comm_lim
-        return None
+    def get_comm_limited(self, step, agent_id):
+        """
+        For a 2 Agent game we are limiting communications. For base scenario, where Red starts in Subnet 1, 
+        only agent 2 needs to communicate if it has detected anything
+        """
+        if agent_id == 1:
+            return 0
+        
+        for i, obs in enumerate(self._obs):
+            if i != agent_id:
+                activity = any(1 in host for host in obs)
+                if activity:
+                    comm_lim = 1
+                else:
+                    comm_lim = 0
+        return comm_lim
     
     def get_agent_hosts(self, agent):
         return self._env.get_agent_hosts(agent)

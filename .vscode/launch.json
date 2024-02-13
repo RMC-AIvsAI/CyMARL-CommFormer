@@ -13,12 +13,12 @@
             //"program": "pycomm/main.py",
             //"args": ["-c", "pycomm/config/switch_3_dial.json", "-m", "small"],
             "program": "pycomm/main.py",
-            "args": ["-c", "pycomm/config/cyborg_dial.json", "-m", "confidentiality_small", "-r"],
+            "args": ["-c", "pycomm/config/cyborg_dial.json", "-m", "confidentiality_small"],
             //"program": "learning-to-communicate/main.py",
             //"args": ["-c", "learning-to-communicate/config/switch_3_dial.json"],
             //"program": "pymarl2/main.py",
             //"args": ["--config=qmix", "--env-config=cyborg", "with", "env_args.map_name=confidentiality_small"],
-            "console": "integratedTerminal",
+            //"console": "integratedTerminal",
             "justMyCode": true
         }
     ]
