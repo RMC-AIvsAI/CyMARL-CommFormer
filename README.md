@@ -40,7 +40,7 @@ Note that experiments will default to 1M timesteps, this can be changed by modif
 python pymarl2\main.py --config=qmix --env-config=cyborg with env_args.map_name=confidentiality_small t_max=250000
 ```
 For running sequential experiements, batch scripts are used which pull parameters from files in `\runner\config\`. The output of each experiment is stored in `results\sacred\<map_name>\`. Best practice is to add a `name` value to the python command to avoid mixing up experiments using the same map.
-```
+
 To run experiments on DIAL algorithm: 
 ```
 python pycomm/main.py -c pycomm/config/cyborg_dial.json -m confidentiality_small -r
