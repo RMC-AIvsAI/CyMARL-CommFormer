@@ -1,16 +1,17 @@
-# CyMARL: A MARL extension of CybORG
+## Overview
+This codebase adapts 2 libraries: CyMARL and DIAL to train Multiple Agents in Autonomous Cyber Operations (CybORG). Collectively will be called CyMARL. More information can be found in the respective library folders: [CyMARL](pymarl2/) and [DIAL](pycomm/).
 
-CyMARL is a [PyMARL](https://github.com/oxwhirl/pymarl) environment that extends [CAGE Challenge 2](https://github.com/cage-challenge/cage-challenge-2) for cooperative multi-agent reinforcement learning. This repository is adapted from [PyMARL2](https://github.com/hijkzzz/pymarl2/) and [CybORG v3.1](https://github.com/cage-challenge/CybORG/tree/dd586a39b129fb21b7ef4c15d388ad809f24882f).
+
 
 ## Installation instructions
-CyMARL has been tested using Windows 10. To install, begin with a new Anaconda environment following these steps:
+Codebase has been tested using Windows 10 and Windows 11. To install, begin with a new Anaconda environment following these steps:
 ```
 conda create -n cymarl python=3.9 -y
 conda activate cymarl
 # get pytorch
 pip install torch==1.8.2 torchvision==0.9.2 torchaudio===0.8.2 --extra-index-url https://download.pytorch.org/whl/lts/1.8/cu111
 
-# install CyMARL (includes PyMARL and CybORG)
+# install CyMARL and DIAL (includes PyMARL, DIAL and CybORG)
 cd "path/to/cymarl/"
 pip install -e ./
 # install SMAC dependencies
@@ -20,13 +21,17 @@ To verify the installation of PyMARL, run an experiement:
 ```
 python pymarl2\main.py --config=qmix_predator_prey --env-config=stag_hunt with env_args.map_name=stag_hunt
 ```
+To verify the installation of DIAL, run an experiement:
+```
+python pycomm/main.py -c pycomm/config/cyborg_dial.json -m confidentiality_small -r
+```
 To verify the installation and configuration of CybORG, run the debugging script:
 ```
 python runner\basic_marl.py
 ```
 
 ## Experimentation
-CyMARL is run via command line interface as a PyMARL environment. To run a single experiment, the key "cyborg" is used as the `env-config` value and a map name must be provided.
+To run experiments on QMix algorithm: 
 ```
 python pymarl2\main.py --config=qmix --env-config=cyborg with env_args.map_name=confidentiality_small
 ```
@@ -35,3 +40,8 @@ Note that experiments will default to 1M timesteps, this can be changed by modif
 python pymarl2\main.py --config=qmix --env-config=cyborg with env_args.map_name=confidentiality_small t_max=250000
 ```
 For running sequential experiements, batch scripts are used which pull parameters from files in `\runner\config\`. The output of each experiment is stored in `results\sacred\<map_name>\`. Best practice is to add a `name` value to the python command to avoid mixing up experiments using the same map.
+```
+To run experiments on DIAL algorithm: 
+```
+python pycomm/main.py -c pycomm/config/cyborg_dial.json -m confidentiality_small -r
+```

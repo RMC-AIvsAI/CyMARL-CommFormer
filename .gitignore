@@ -3,3 +3,8 @@
 *.cpython-39.pyc
 results/sacred
 results/models
+results/dial
+learning-to-communicate/
+pycomm/test.py
+pycomm/tester.py
+pycomm/games

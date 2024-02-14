@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
 	result_path = None
 	if args.results:
-		result_path = "pycomm/results"
+		result_path = "results/dial"
 		result_path = os.path.join(result_path, Path(args.map_name).stem)
 		start_time = str(datetime.datetime.now().strftime("%Y_%m_%d_T%H_%M_%S_%f"))
 		result_path = os.path.join(result_path, Path(start_time).stem)
