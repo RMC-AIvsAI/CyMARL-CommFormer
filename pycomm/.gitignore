@@ -15,5 +15,3 @@ saved_models/
 logs/
 results/
 data/
-test.py
-tester.py
