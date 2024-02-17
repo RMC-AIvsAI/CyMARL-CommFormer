@@ -138,6 +138,15 @@ class VelociraptorServer(Session):
         else:
             self.sus_pids[hostname] = [pid]
     
+    def remove_sus_pid(self, hostname: str, pid: int):
+         if hostname in self.sus_pids:
+              if pid not in self.sus_pids:
+                   self.sus_pids[hostname].remove(pid)
+
+    def remove_all_pids(self, hostname: str):
+         if hostname in self.sus_pids:
+              self.sus_pids.pop(hostname)
+    
     def add_sus_file(self, hostname: str, path: str, name: str):
         if hostname in self.sus_files:
             self.sus_files[hostname].append([path, name])

@@ -26,10 +26,11 @@ class RestoreFromBackup(LocalAction):
         old_sessions = {}
         for agent, sessions in target_host.sessions.items():
             old_sessions[agent] = {}
-            for session in sessions:
-                old_sessions[agent][session] = state.sessions[agent].pop(session)
+            for sess in sessions:
+                old_sessions[agent][sess] = state.sessions[agent].pop(sess)
         target_host.restore()
         for agent, sessions in target_host.sessions.items():
-            for session in sessions:
-                state.sessions[agent][session] = old_sessions[agent][session]
+            for sess in sessions:
+                state.sessions[agent][sess] = old_sessions[agent][sess]
+        session.remove_all_pids(target_host.hostname)
         return obs

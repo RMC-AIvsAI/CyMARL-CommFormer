@@ -30,6 +30,7 @@ class StopProcess(LocalAction):
             if (proc.user != 'root' and proc.user != 'SYSTEM'):
                 obs.set_success(True)
                 self.kill_process(state, target_host, proc, file)
+                session.remove_sus_pid(target_host.hostname, self.pid)
             else:
                 obs.set_success(False)
         else:
