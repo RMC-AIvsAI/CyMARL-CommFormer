@@ -12,6 +12,7 @@ class EnumActionDIALWrapper(BaseWrapper):
         super().__init__(env)
         self.possible_actions = {}
         self.action_signature = {}
+        self.allowed_subnets = ['User', 'Operational']
         self.get_action_space('Red')
 
     def step(self, agent=None, action: int = None) -> Results:
@@ -42,8 +43,6 @@ class EnumActionDIALWrapper(BaseWrapper):
             for p in self.action_signature[action]:
                 if p == 'priority':
                     continue
-                if p == 'ports':
-                    continue
                 temp[p] = []
                 if p not in params:
                     params.append(p)
@@ -55,6 +54,7 @@ class EnumActionDIALWrapper(BaseWrapper):
                     new_param_list = []
                     for p_dict in param_list:
                         for key, val in action_space[p].items():
+                            new_key = key
                             if "Blue" in agent and p == "hostname":
                                 if key == "Defender":
                                     continue
@@ -62,7 +62,12 @@ class EnumActionDIALWrapper(BaseWrapper):
                                     continue
                                 if not val:
                                     continue
-                            p_dict[p] = key
+                            if "Blue" in agent and p == "subnet":
+                                if not val:
+                                    continue
+                                allowed_sub = list(action_space['allowed_subnets'].keys())[0]
+                                new_key = [item for item in self.allowed_subnets if item != allowed_sub][0]
+                            p_dict[p] = new_key
                             new_param_list.append({key: value for key, value in p_dict.items()})
                     param_list = new_param_list
             for p_dict in param_list:

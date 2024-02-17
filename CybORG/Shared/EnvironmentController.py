@@ -153,14 +153,14 @@ class EnvironmentController(CybORGLogger):
             agent_object.messages = []
             if agent_name not in actions:
                 actions[agent_name] = agent_object.get_action(self.get_last_observation(agent_name))
-            if not skip_valid_action_check:
+            if agent_name == 'Red' and not skip_valid_action_check:
                 actions[agent_name] = self.replace_action_if_invalid(actions[agent_name], agent_object)
 
         self.action = actions
         #actions = self.sort_action_order(actions)
 
         #sort the actions such that red always goes first
-        actions = self.reorder_red_first(actions)
+        #actions = self.reorder_red_first(actions)
         
         # clear old observations
         self.observation = {}

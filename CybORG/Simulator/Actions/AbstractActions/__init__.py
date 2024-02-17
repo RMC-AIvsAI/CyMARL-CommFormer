@@ -12,3 +12,5 @@ from .Impact import Impact
 from .DataRepair import DataRepair
 from .Deny import Deny
 from .Tamper import Tamper
+#DIAL
+from .Block import Block

@@ -20,8 +20,9 @@ class CybORGCNet(nn.Module):
 		self.init_param_range = (-0.08, 0.08)
 		self.hosts_per_agent = opt.hosts_per_agent
 		self.obs_size = opt.game_obs_space
-		self.obs_per_host = int(self.obs_size/self.hosts_per_agent)
-		self.state_emb_size = self.obs_per_host ** 2
+		self.obs_per_host, self.block_bit = divmod(self.obs_size, self.hosts_per_agent)
+		self.obs_emb_size = 2 ** self.obs_per_host
+		self.block_emb_size = 2 ** self.block_bit
 		# Set up inputs
 		self.agent_lookup = nn.Embedding(opt.game_nagents, opt.model_rnn_size)
 
@@ -30,7 +31,10 @@ class CybORGCNet(nn.Module):
 
 		# Add Embeddings to the ModuleList based on the specified number of embeddings
 		for _ in range(self.hosts_per_agent):
-			self.state_mlp.append(nn.Embedding(self.state_emb_size, opt.model_rnn_size))
+			self.state_mlp.append(nn.Embedding(self.obs_emb_size, opt.model_rnn_size))
+
+		# Add an additional Embedding for n_steps
+		self.state_mlp.append(nn.Embedding(self.block_emb_size, opt.model_rnn_size))
 
 		# Action aware
 		if opt.model_action_aware:
@@ -111,7 +115,9 @@ class CybORGCNet(nn.Module):
 				indices = torch.arange(end_index - start_index).flip(0).to(s_t.device)
 				module_input = (s_t[:, start_index:end_index] * (2**indices)).sum(dim=1)
 			else:
-				module_input = s_t[:, start_index:end_index].squeeze()
+				indices = torch.arange(end_index - start_index).flip(0).to(s_t.device)
+				module_input = (s_t[:, start_index:end_index] * (2**indices)).sum(dim=1)
+				#module_input = s_t[:, start_index:end_index].squeeze()
 			z_o += state_embedding(module_input)
 
 		if opt.model_action_aware:

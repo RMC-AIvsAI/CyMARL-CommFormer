@@ -133,7 +133,8 @@ class VelociraptorServer(Session):
 
     def add_sus_pids(self, hostname: str, pid: int):
         if hostname in self.sus_pids:
-            self.sus_pids[hostname].append(pid)
+            if pid not in self.sus_pids[hostname]:
+                self.sus_pids[hostname].append(pid)
         else:
             self.sus_pids[hostname] = [pid]
     

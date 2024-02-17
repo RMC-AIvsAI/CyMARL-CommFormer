@@ -29,7 +29,9 @@ class State(CybORGLogger):
         self.np_random = np_random
         self.scenario = scenario
         self.subnet_name_to_cidr = None  # contains mapping of subnet names to subnet cidrs
+        self.subnets_cidr_to_name = None  # contains mapping of subnet cidrs to subnet names
         self.ip_addresses = None  # contains mapping of ip addresses to hostnames
+        self.hostname_subnet_map = None # contains mapping of hostnames to subnet name
 
         self.hosts = None  # contains mapping of hostnames to host objects
         self.sessions = None  # contains mapping of agent names to mapping of session id to session objects
@@ -110,7 +112,9 @@ class State(CybORGLogger):
 
     def _initialise_state(self, scenario: Scenario):
         self.subnet_name_to_cidr = {}  # contains mapping of subnet names to subnet cidrs
+        self.subnets_cidr_to_name = {}  # contains mapping of subnet cidrs to subnet names
         self.ip_addresses = {}  # contains mapping of ip addresses to hostnames
+        self.hostname_subnet_map = {}  # contains mapping of hostnames to subnet name
 
         self.hosts = {}  # contains mapping of hostnames to host objects
         self.sessions = {}  # contains mapping of agent names to mapping of session id to session objects
@@ -121,13 +125,15 @@ class State(CybORGLogger):
         for subnet_name, subnet_info in scenario.subnets.items():
             subnet_cidr = subnet_info.cidr
             self.subnet_name_to_cidr[subnet_name] = subnet_cidr
-
-            for hostname, host_info in scenario.hosts.items():
-                for interface in host_info.interface_info:
-                    self.ip_addresses[interface['ip_address']] = hostname
+            self.subnets_cidr_to_name[subnet_cidr] = subnet_name
             self.subnets[subnet_cidr] = Subnet(cidr=subnet_cidr, ip_addresses=subnet_info.ip_addresses,
                                                nacls=scenario.get_subnet_nacls(subnet_name), name=subnet_name)
 
+        for hostname, host_info in scenario.hosts.items():
+            for interface in host_info.interface_info:
+                self.ip_addresses[interface['ip_address']] = hostname
+                self.hostname_subnet_map[hostname] = self.subnets_cidr_to_name[interface['subnet']]
+            
         # create host objects for all host names in the scenario
         for hostname in scenario.hosts:
             host_info = scenario.get_host(hostname)

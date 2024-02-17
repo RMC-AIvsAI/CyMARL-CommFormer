@@ -16,7 +16,7 @@ from .ShellActionsFolder import \
     IFConfig, IPConfig, ShellPS
 from .VelociraptorActionsFolder import \
     VelociraptorPoll, GetProcessInfo, GetProcessList, GetFileInfo
-from .AbstractActions import Monitor, DiscoverNetworkServices, DiscoverRemoteSystems, ExploitRemoteService, Analyse, Remove, Restore, Misinform, PrivilegeEscalate, Impact, Tamper, DataRepair, Deny
+from .AbstractActions import Monitor, DiscoverNetworkServices, DiscoverRemoteSystems, ExploitRemoteService, Analyse, Remove, Restore, Misinform, PrivilegeEscalate, Impact, Tamper, DataRepair, Deny, Block
 from .GreenActions import GreenPingSweep, GreenPortScan, GreenConnection
 from .ConcreteActions import HTTPRFI, HTTPSRFI, SSHBruteForce, FTPDirectoryTraversal, HarakaRCE, SQLInjection, EternalBlue, BlueKeep, RemoteCodeExecutionOnSMTP, ExploitDroneVulnerability, DecoyApache, DecoyFemitter, DecoyHarakaSMPT, DecoySmss, DecoySSHD, DecoySvchost, DecoyTomcat, DecoyVsftpd, RetakeControl, SeizeControl, FloodBandwidth, RemoveOtherSessions, AddFile, RemoveFile
 from .ConcreteActions.EscalateActions import EscalateAction

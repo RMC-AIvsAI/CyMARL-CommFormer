@@ -15,6 +15,7 @@ class BlueTableDIALWrapper(BaseWrapper):
         self.output_mode = output_mode
         self.blue_info = {}
         self.agent_hosts = {} # CyMARL
+        self.agent_blocks = {} # DIAL
         # CyMARL - Set class vars
         self.reset() 
 
@@ -40,22 +41,15 @@ class BlueTableDIALWrapper(BaseWrapper):
         if not self.agent_hosts.get(agent, None):
             self.agent_hosts[agent] = list(obs.keys())
         
-        #self._process_last_action(agent)
+        self.agent_blocks[agent] = []
         for host, info in self.blue_info.items():
             if host in self.agent_hosts[agent]:
                 info[-2] = 'None'
-
+        
+        self._process_last_action(agent)
         anomaly_obs = self._detect_anomalies(obs) if not baseline else obs
         del obs['success']
         #info = self._process_anomalies(anomaly_obs)
-
-        action = self.get_last_action(agent=agent)
-        if action is not None:
-            name = action.__class__.__name__
-            hostname = action.get_params()['hostname'] if name in ('Analyse', 'Restore','Remove') else None
-            if name == 'Analyse':
-                self.blue_info[hostname][-1] = 'No'
-
         self._process_anomalies(anomaly_obs)
         """
         if baseline:
@@ -65,14 +59,6 @@ class BlueTableDIALWrapper(BaseWrapper):
                 self.blue_info[host][-1] = 'No'
         self.info = info
         """
-        if action is not None:
-            if name == 'Restore':
-                self.blue_info[hostname][-1] = 'No'
-            if name == 'Remove':
-                compromised = self.blue_info[hostname][-1]
-                if compromised != 'No':
-                    self.blue_info[hostname][-1] = 'Unknown'
-
         if self.output_mode == 'table':
             return self._create_blue_table(success)
         elif self.output_mode == 'anomaly':
@@ -87,6 +73,8 @@ class BlueTableDIALWrapper(BaseWrapper):
 
     def _process_initial_obs(self, obs):
         obs = obs.copy()
+        for agent in self.agents:
+            self.agent_blocks[agent] = []
         self.baseline = obs
         del self.baseline['success']
         for hostid in obs:
@@ -110,6 +98,23 @@ class BlueTableDIALWrapper(BaseWrapper):
         if action is not None:
             name = action.__class__.__name__
             hostname = action.get_params()['hostname'] if name in ('Analyse', 'Restore','Remove') else None
+            subnet = action.get_params()['subnet'] if name in ('Block') else None
+            if name == 'Analyse':
+                self.blue_info[hostname][-1] = 'No'
+            if name == 'Block':
+                self.agent_blocks[agent].append(subnet)
+            if name == 'Restore':
+                self.blue_info[hostname][-1] = 'No'
+            if name == 'Remove':
+                compromised = self.blue_info[hostname][-1]
+                if compromised != 'No':
+                    if compromised != 'Privileged':
+                        self.blue_info[hostname][-1] = 'Unknown'
+        """
+        action = self.get_last_action(agent=agent)
+        if action is not None:
+            name = action.__class__.__name__
+            hostname = action.get_params()['hostname'] if name in ('Analyse', 'Restore','Remove') else None
 
             if name == 'Restore':
                 self.blue_info[hostname][-1] = 'No'
@@ -117,7 +122,7 @@ class BlueTableDIALWrapper(BaseWrapper):
                 #compromised = self.blue_info[hostname][-1]
                 #if compromised != 'No':
                 self.blue_info[hostname][-1] = 'Unknown'
-            """
+            
             elif name == 'Analyse':
                 #Added this for DIAL implementation, previously after analyse action, with no malware state wasn't updating to reflect no exploits
                 #In process_anomalies function added an extra layer to detect user privileges. So if malware is detected, this will get updated
@@ -260,6 +265,12 @@ class BlueTableDIALWrapper(BaseWrapper):
             vector.extend(value)
 
             proto_vector.append(vector)
+
+        if not self.agent_blocks[agent]:
+            value = [0]
+        else:
+            value = [1]
+        proto_vector.append(value)
         return proto_vector
 
     def get_attr(self,attribute:str):

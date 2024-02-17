@@ -16,9 +16,9 @@ class Restore(Action):
 
     def execute(self, state) -> Observation:
         # perform monitor at start of action
-        monitor = Monitor(session=self.session, agent=self.agent)
-        obs = monitor.execute(state)
-
+        #monitor = Monitor(session=self.session, agent=self.agent)
+        #obs = monitor.execute(state)
+        obs = Observation()
         if self.session not in state.sessions[self.agent]:
             obs.set_success(False)
             return obs
@@ -27,7 +27,7 @@ class Restore(Action):
         sessions = [s for s in state.sessions[self.agent].values() if s.hostname == self.hostname]
         if len(sessions) > 0:
             session = state.np_random.choice(sessions)
-            #obs = Observation(True)
+            obs.set_success(True)
             # restore host
             action = RestoreFromBackup(session=self.session, agent=self.agent, target_session=session.ident)
             action.execute(state)

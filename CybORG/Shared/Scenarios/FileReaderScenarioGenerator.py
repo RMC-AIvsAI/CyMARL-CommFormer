@@ -109,7 +109,9 @@ class FileReaderScenarioGenerator(ScenarioGenerator):
         #        data = json.load(f)
         #    for host in scenario.hosts:
         #        scenario.hosts[host].starting_position = (data['drones'][host]['x'], data['drones'][host]['y'])
-
+        for agent_name, agent_data in scenario.agents.items():
+            if 'blue' in agent_name.lower():
+                agent_data.default_actions = (Monitor, {'session': 0, 'agent': agent_name})
         return scenario
 
     def __str__(self):

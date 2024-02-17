@@ -112,7 +112,7 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 				end_time = time.time()
 				game = PlayGame(opt, result_path + '.txt')
 				game.open_file()
-				for _ in range(1000):
+				for _ in range(100):
 					episode = arena.run_episode(agents, buffer, eps=0, train_mode=False)
 					game.play_game(episode)
 				game.close_file()

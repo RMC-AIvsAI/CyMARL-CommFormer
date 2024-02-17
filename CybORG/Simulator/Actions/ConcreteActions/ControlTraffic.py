@@ -1,4 +1,4 @@
-from ipaddress import IPv4Address
+from ipaddress import IPv4Address, IPv4Network
 
 from CybORG.Shared import Observation
 from CybORG.Simulator.Actions.ConcreteActions.LocalAction import LocalAction
@@ -43,3 +43,19 @@ class AllowTraffic(LocalAction):
                 state.blocks[hostname].remove(other_hostname)
                 return Observation(True)
         return Observation(False)
+    
+class BlockZoneTraffic(LocalAction):
+    def __init__(self, session: int, agent: str, subnet: IPv4Network):
+        super(BlockZoneTraffic, self).__init__(session, agent)
+        self.subnet = subnet
+        self.priority = 1
+
+    def execute(self, state: State) -> Observation:
+        if self.agent in state.sessions and self.session in state.sessions[self.agent] and state.sessions[self.agent][self.session].active:
+            hostname = state.sessions[self.agent][self.session].hostname
+        else:
+            return Observation(False)
+        from_subnet = self.subnet
+        to_subnet = state.scenario.agents[self.agent].allowed_subnets[0]
+        state.blocks[to_subnet] = from_subnet
+        return Observation(True)

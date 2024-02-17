@@ -48,7 +48,6 @@ class CyborgEnv(MultiAgentEnv):
         action_dict = dict(zip(self._agent_ids, actions))
         self._obs, reward, done, info = self._env.step(action_dict)
         self._obs = list(self._obs.values())
-        self._update_sender()
         self.step_count += 1
         self.r_t = list(reward.values())[0]
         return torch.tensor(list(reward.values())), int(all(done.values())), str(info['Red']['action'])

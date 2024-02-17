@@ -37,6 +37,15 @@ class Pingsweep(RemoteAction):
             return obs
         from_host = state.hosts[state.sessions[self.agent][self.session].hostname]
         session = state.sessions[self.agent][self.session]
+
+        # Check if the target subnet is blocking traffic from the current sessions subnet
+        from_subnet = state.subnets_cidr_to_name[from_host.interfaces[0].subnet]
+        to_subnet = state.subnets_cidr_to_name[self.subnet]
+        if to_subnet in state.blocks:
+            if state.blocks[to_subnet] == from_subnet:
+                obs.set_success(False)
+                return obs
+
         if not session.active:
             obs.set_success(False)
             return obs

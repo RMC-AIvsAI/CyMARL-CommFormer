@@ -4,6 +4,7 @@ from CybORG.Shared import Observation
 from .Monitor import Monitor
 from CybORG.Simulator.Actions import Action
 from CybORG.Simulator.Actions.AbstractActions import Monitor
+from CybORG.Simulator.Session import VelociraptorServer
 from CybORG.Simulator.Actions.ConcreteActions.DensityScout import DensityScout
 from CybORG.Simulator.Actions.ConcreteActions.SigCheck import SigCheck
 
@@ -18,8 +19,10 @@ class Analyse(Action):
 
     def execute(self, state) -> Observation:
         # perform monitor at start of action
-        monitor = Monitor(session=self.session, agent=self.agent)
-        obs = monitor.execute(state)
+        #monitor = Monitor(session=self.session, agent=self.agent)
+        #obs = monitor.execute(state)
+        obs = Observation()
+        parent_session: VelociraptorServer = state.sessions[self.agent][self.session]
         if any(state.hosts[self.hostname].sessions['Red']):
             self.action_success = True
         else:
@@ -35,15 +38,11 @@ class Analyse(Action):
                 sub_action = artifact(agent=self.agent, session=self.session, target_session=session.ident)
                 sub_obs = sub_action.execute(state)
                 obs.combine_obs(sub_obs)
-            """
+            
             if self.hostname in obs.data:
                 if 'Files' in obs.data[self.hostname]:
-                    self.action_success = True
-                else:
-                    obs.set_success(False)
-            else:
-                obs.set_success(False)
-            """
+                    red_pid = [s for s in state.sessions['Red'].values() if s.hostname == self.hostname][0].pid
+                    parent_session.add_sus_pids(hostname=self.hostname, pid=int(red_pid))
             return obs
         else:
             obs.set_success(False)
