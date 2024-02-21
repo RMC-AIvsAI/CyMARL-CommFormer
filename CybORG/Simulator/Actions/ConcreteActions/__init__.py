@@ -14,4 +14,4 @@ from .RemoveOtherSessions import RemoveOtherSessions
 # CyMARL
 from .AddFile import AddFile
 from .RemoveFile import RemoveFile
-from .ControlTraffic import BlockZoneTraffic, BlockTraffic
+from .ControlTraffic import BlockZoneTraffic, BlockTraffic, AllowZoneTraffic, AllowTraffic

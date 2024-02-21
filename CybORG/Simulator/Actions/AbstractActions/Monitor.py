@@ -13,8 +13,6 @@ class Monitor(Action):
     def execute(self, state: State) -> Observation:
         # remove all the blocks from the previous time step
         subnet = state.scenario.agents[self.agent].allowed_subnets[0]
-        if subnet in state.blocks:
-            state.blocks.pop(subnet)
         obs = Observation(True)
         session: VelociraptorServer = state.sessions[self.agent][self.session]
         for child in session.children.values():

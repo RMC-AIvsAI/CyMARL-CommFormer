@@ -49,6 +49,8 @@ if __name__ == '__main__':
 		result_path = os.path.join(result_path, Path(start_time).stem)
 		# Create the results folder if it doesn't exist
 		os.makedirs(result_path, exist_ok=True)
+		policies = os.path.join(result_path, Path('policies').stem)
+		os.makedirs(policies, exist_ok=True)
 		
 
 	for i in range(args.ntrials):
@@ -57,5 +59,5 @@ if __name__ == '__main__':
 		if result_path:
 			trial_result_path = os.path.join(result_path, Path(str(i + args.start_index)).stem)
 		trial_opt = copy.deepcopy(opt)
-		run_trial(trial_opt, env_args, result_path=trial_result_path, verbose=args.verbose)
+		run_trial(trial_opt, env_args, result_path=result_path, verbose=args.verbose)
 

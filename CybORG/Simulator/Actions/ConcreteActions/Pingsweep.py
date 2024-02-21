@@ -42,7 +42,7 @@ class Pingsweep(RemoteAction):
         from_subnet = state.subnets_cidr_to_name[from_host.interfaces[0].subnet]
         to_subnet = state.subnets_cidr_to_name[self.subnet]
         if to_subnet in state.blocks:
-            if state.blocks[to_subnet] == from_subnet:
+            if from_subnet in state.blocks[to_subnet]:
                 obs.set_success(False)
                 return obs
 

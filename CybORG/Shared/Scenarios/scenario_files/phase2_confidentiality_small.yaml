@@ -29,6 +29,7 @@ Agents:
       - Restore
       - Analyse
       - Block
+      - UnBlock
     agent_type: SleepAgent
     reward_calculator_type: BlueConfidentiality
     starting_sessions:
@@ -87,6 +88,7 @@ Agents:
       - Restore
       - Analyse
       - Block
+      - UnBlock
     agent_type: SleepAgent
     reward_calculator_type: BlueConfidentiality
     starting_sessions:

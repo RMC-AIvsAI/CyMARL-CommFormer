@@ -38,11 +38,12 @@ class Analyse(Action):
                 sub_action = artifact(agent=self.agent, session=self.session, target_session=session.ident)
                 sub_obs = sub_action.execute(state)
                 obs.combine_obs(sub_obs)
-            
+            """
             if self.hostname in obs.data:
                 if 'Files' in obs.data[self.hostname]:
                     red_pid = [s for s in state.sessions['Red'].values() if s.hostname == self.hostname][0].pid
                     parent_session.add_sus_pids(hostname=self.hostname, pid=int(red_pid))
+            """
             return obs
         else:
             obs.set_success(False)
@@ -50,10 +51,10 @@ class Analyse(Action):
 
     @property
     def cost(self):
-        if not self.action_success:
-            return -1.0
-        else:
-            return 0
+        #if not self.action_success:
+        #    return -1.0
+        #else:
+        return -0.5
 
     def __str__(self):
         return f"{self.__class__.__name__} {self.hostname}"

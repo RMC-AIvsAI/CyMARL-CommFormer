@@ -63,7 +63,7 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 
 	test_callback = None
 	if result_path:
-		result_out = open(result_path + '.csv', 'w')
+		result_out = open(result_path + '/trial.csv', 'w')
 
 		csv_meta = '#' + json.dumps(opt) + '\n'
 
@@ -102,15 +102,20 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 				agent.learn_from_episode(episode_batch)
 
 		if e % opt.step_test == 0:
+			game = PlayGame(opt, result_path + '/policies/' + str(e) + '.txt')
+			game.open_file()
 			episode = arena.run_episode(agents, buffer, eps=0, train_mode=False)
 			norm_r = average_reward(opt, episode, opt.bs_run, normalized=opt.normalized_reward)
 			rewards.append(norm_r)
 			if test_callback:
 				test_callback(0, 0, e, norm_r)
+			game.play_game(episode)
+			game.close_file()
 			print('TEST EPOCH:', e, 'avg steps:', episode.steps.float().mean().item(), 'avg reward:', norm_r)
+	
 			if e == opt.nepisodes - 1:
 				end_time = time.time()
-				game = PlayGame(opt, result_path + '.txt')
+				game = PlayGame(opt, result_path + '/final.txt')
 				game.open_file()
 				for _ in range(100):
 					episode = arena.run_episode(agents, buffer, eps=0, train_mode=False)

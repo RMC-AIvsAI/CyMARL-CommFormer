@@ -45,7 +45,7 @@ class AllowTraffic(LocalAction):
         return Observation(False)
     
 class BlockZoneTraffic(LocalAction):
-    def __init__(self, session: int, agent: str, subnet: IPv4Network):
+    def __init__(self, session: int, agent: str, subnet: str):
         super(BlockZoneTraffic, self).__init__(session, agent)
         self.subnet = subnet
         self.priority = 1
@@ -57,5 +57,30 @@ class BlockZoneTraffic(LocalAction):
             return Observation(False)
         from_subnet = self.subnet
         to_subnet = state.scenario.agents[self.agent].allowed_subnets[0]
-        state.blocks[to_subnet] = from_subnet
+        if to_subnet in state.blocks:
+            if from_subnet not in state.blocks[to_subnet]:
+                state.blocks[to_subnet].append(from_subnet)
+            else:
+                return Observation(False)
+        else:
+            state.blocks[to_subnet] = [from_subnet]
         return Observation(True)
+    
+class AllowZoneTraffic(LocalAction):
+    def __init__(self, session: int, agent: str, subnet: str):
+        super(AllowZoneTraffic, self).__init__(session, agent)
+        self.subnet = subnet
+        self.priority = 1
+
+    def execute(self, state: State) -> Observation:
+        if self.agent in state.sessions and self.session in state.sessions[self.agent] and state.sessions[self.agent][self.session].active:
+            hostname = state.sessions[self.agent][self.session].hostname
+        else:
+            return Observation(False)
+        from_subnet = self.subnet
+        to_subnet = state.scenario.agents[self.agent].allowed_subnets[0]
+        if to_subnet in state.blocks:
+            if from_subnet in state.blocks[to_subnet]:
+                state.blocks[to_subnet].remove(from_subnet)
+                return Observation(True)
+        return Observation(False)

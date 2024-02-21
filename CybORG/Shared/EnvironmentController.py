@@ -75,6 +75,8 @@ class EnvironmentController(CybORGLogger):
             agent.set_init_obs(self.observation[agent_name].data, self.init_state)
         self.message_length = 16
         self.done = self.determine_done()
+        self.host_compromises = {}
+        self.block_time = {}
 
         # calculate reward for each team
         self._get_reward()
@@ -112,6 +114,8 @@ class EnvironmentController(CybORGLogger):
             self.observation[agent_name] = self._filter_obs(self.get_true_state(self.INFO_DICT[agent_name]), agent_name)
             agent_object.set_init_obs(self.observation[agent_name].data, self.init_state)
         self.done = self.determine_done()
+        self.host_compromises = {}
+        self.block_time = {}
 
         # calculate reward for each team
         self._get_reward(reset=True)
@@ -128,6 +132,83 @@ class EnvironmentController(CybORGLogger):
                 if reset:
                     r_calc.reset()
                 self.reward[agent_name][calc_name] = self.calculate_reward(r_calc)
+    
+    def _calculate_block_cost(self):
+               
+        blocked_subnet_cost = -1.0
+        total_blocks = [0, 0]
+        if not self.state.blocks:
+            return 0
+        else:
+            blocked_subnets = [subnet for values in self.state.blocks.values() for subnet in values]
+
+            if not self.host_compromises:
+                return -1.0 * len(blocked_subnets)
+            else:
+                for blocked_subnet in blocked_subnets:
+                    counter = 0
+                    for host, step in self.host_compromises.items():
+                        counter += 1
+                        if self.state.hostname_subnet_map[host] == blocked_subnet:
+                            if (self.step_count - step) > 3 or (self.step_count - self.block_time[self.state.hostname_subnet_map[host]]) > 3:
+                                if blocked_subnet == 'User':
+                                    total_blocks[0] = 1
+                                else:
+                                    total_blocks[1] = 1
+                        else:
+                            if blocked_subnet == 'User':
+                                if total_blocks[0] == 0:
+                                    total_blocks[0] = 1
+                            else:
+                                if total_blocks[1] == 0:
+                                    total_blocks[1] = 1
+
+            """
+                for i, (subnet, info) in enumerate(self.state.blocks.items()):
+                    if info:
+                        blocked_subnet = info[0]
+                        for host, step in self.host_compromises.items():
+                            if self.state.hostname_subnet_map[host] == blocked_subnet:
+                                if (self.step_count - step) > 3 or (self.step_count - self.block_time[blocked_subnet]) > 3:
+                                    total_blocks[i] = 1
+            """
+        
+        #for values in self.state.blocks.values():
+        #    for host in values:
+        #        if len(self.state.hosts[host].sessions['Red']) == 0:
+        #            total_blocked_hosts += 1
+        return blocked_subnet_cost * sum(total_blocks)
+    
+    def _count_steps_for_block_and_compr(self):
+        # Calculate the timesteps a host gets compromised
+        for host, host_info in self.state.hosts.items():
+            if host == 'Defender' or host == 'User0' or host == 'Enterprise_router' or host == 'Operational_router' or host == 'user_router':
+                continue
+            if host not in self.host_compromises:
+                if any(host_info.sessions['Red']):
+                    self.host_compromises[host] = self.step_count
+        
+        # Calculate the timesteps block is active for
+        for info in self.state.blocks.values():
+            if info:
+                if info[0] not in self.block_time:
+                    self.block_time[info[0]] = self.step_count
+
+    def _rem_block_and_compr(self):
+        # Remove the host compromises if none
+        for host, host_info in self.state.hosts.items():
+            if host == 'Defender' or host == 'User0' or host == 'Enterprise_router' or host == 'Operational_router' or host == 'user_router':
+                continue
+
+            if host in self.host_compromises:
+                if not any(host_info.sessions['Red']):
+                    self.host_compromises.pop(host)
+
+        # Remove the Subnet from blocks if block is removed
+        subnets = [sub for sub in self.block_time.keys()]
+        for subnet in subnets:
+            if not any(subnet in sublist for sublist in self.state.blocks.values()):
+                self.block_time.pop(subnet)
 
     def step(self, actions: dict = None, skip_valid_action_check=False):
 
@@ -181,6 +262,8 @@ class EnvironmentController(CybORGLogger):
         # calculate done signal
         self.done = self.scenario_generator.determine_done(self)
 
+        self._count_steps_for_block_and_compr()
+        
         # reset previous reward
         self.reward = {}
 
@@ -189,6 +272,10 @@ class EnvironmentController(CybORGLogger):
 
         for agent_name, team_name in self.team_assignments.items():
             self.reward[agent_name]['action_cost'] = sum([self.action[agent].cost for agent in self.team.keys() if team_name == self.team[agent_name]])
+            #self.reward[agent_name]['block_cost'] = -1.0 * sum([len(values) for values in self.state.blocks.values()])
+            self.reward[agent_name]['block_cost'] = self._calculate_block_cost() if agent_name != 'Red' else 0
+        
+        self._rem_block_and_compr()
 
     def send_messages(self, messages: dict = None):
         """Sends messages between agents"""

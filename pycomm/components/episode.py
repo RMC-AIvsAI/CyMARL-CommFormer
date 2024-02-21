@@ -119,6 +119,7 @@ class PlayGame:
         self.action_dict_1[6] = "Analyse User1"
         self.action_dict_1[7] = "Analyse User2"
         self.action_dict_1[8] = "Block Op Subnet"
+        self.action_dict_1[9] = "UnBlock Op Subnet"
 
         self.action_dict_2 = {}
         self.action_dict_2[1] = "Monitor"
@@ -128,7 +129,8 @@ class PlayGame:
         self.action_dict_2[5] = "Restore Op_Server0"
         self.action_dict_2[6] = "Analyse Op_Host0"
         self.action_dict_2[7] = "Analyse Op_Server0"
-        self.action_dict_2[8] = "Slock User Subnet"
+        self.action_dict_2[8] = "Block User Subnet"
+        self.action_dict_2[9] = "UnBlock User Subnet"
 
     def play_game(self, episode):
         if self.file is not None:

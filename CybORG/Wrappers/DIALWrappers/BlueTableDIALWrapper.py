@@ -41,7 +41,7 @@ class BlueTableDIALWrapper(BaseWrapper):
         if not self.agent_hosts.get(agent, None):
             self.agent_hosts[agent] = list(obs.keys())
         
-        self.agent_blocks[agent] = []
+        #self.agent_blocks[agent] = []
         for host, info in self.blue_info.items():
             if host in self.agent_hosts[agent]:
                 info[-2] = 'None'
@@ -98,11 +98,15 @@ class BlueTableDIALWrapper(BaseWrapper):
         if action is not None:
             name = action.__class__.__name__
             hostname = action.get_params()['hostname'] if name in ('Analyse', 'Restore','Remove') else None
-            subnet = action.get_params()['subnet'] if name in ('Block') else None
+            subnet = action.get_params()['subnet'] if name in ('Block', 'UnBlock') else None
             if name == 'Analyse':
                 self.blue_info[hostname][-1] = 'No'
             if name == 'Block':
-                self.agent_blocks[agent].append(subnet)
+                if subnet not in self.agent_blocks[agent]:
+                    self.agent_blocks[agent].append(subnet)
+            if name == 'UnBlock':
+                if subnet in self.agent_blocks[agent]:
+                    self.agent_blocks[agent].remove(subnet)
             if name == 'Restore':
                 self.blue_info[hostname][-1] = 'No'
             if name == 'Remove':

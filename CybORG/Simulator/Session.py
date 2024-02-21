@@ -140,7 +140,7 @@ class VelociraptorServer(Session):
     
     def remove_sus_pid(self, hostname: str, pid: int):
          if hostname in self.sus_pids:
-              if pid not in self.sus_pids:
+              if pid in self.sus_pids[hostname]:
                    self.sus_pids[hostname].remove(pid)
 
     def remove_all_pids(self, hostname: str):

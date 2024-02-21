@@ -13,11 +13,20 @@ class Restore(Action):
         self.agent = agent
         self.session = session
         self.hostname = hostname
+        self.blocked = False
+        self.action_cost = 0
+        self.mapping = {
+            'Low': 1.0,
+            'Medium': 2.0,
+            'High': 10.0
+        }
 
     def execute(self, state) -> Observation:
         # perform monitor at start of action
         #monitor = Monitor(session=self.session, agent=self.agent)
         #obs = monitor.execute(state)
+        self.blocked = False
+        self.action_cost = self.mapping[state.scenario.hosts[self.hostname].confidentiality_value]
         obs = Observation()
         if self.session not in state.sessions[self.agent]:
             obs.set_success(False)
@@ -32,6 +41,9 @@ class Restore(Action):
             action = RestoreFromBackup(session=self.session, agent=self.agent, target_session=session.ident)
             action.execute(state)
             # remove suspicious files
+            subnet = state.hostname_subnet_map[self.hostname]
+            if state.blocks:
+                self.blocked = any(subnet in sublist for sublist in state.blocks.values())
             return obs
         else:
             obs.set_success(False)
@@ -39,7 +51,10 @@ class Restore(Action):
 
     @property
     def cost(self):
-        return -1
+        if self.blocked:
+            return -0.5 * self.action_cost
+        else:
+            return -1 * self.action_cost
 
     def __str__(self):
         return f"{self.__class__.__name__} {self.hostname}"

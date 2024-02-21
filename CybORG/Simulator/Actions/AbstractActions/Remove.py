@@ -16,6 +16,7 @@ class Remove(Action):
         self.hostname = hostname
         self.action_success = False
         self.any_sus_pids = False
+        self.blocked = False
 
     def execute(self, state: State) -> Observation:
         # perform monitor at start of action
@@ -23,6 +24,7 @@ class Remove(Action):
         #obs = monitor.execute(state)
         self.action_success = False
         self.any_sus_pids = False
+        self.blocked = False
         parent_session: VelociraptorServer = state.sessions[self.agent][self.session]
         # find relevant session on the chosen host
         sessions = [s for s in state.sessions[self.agent].values() if s.hostname == self.hostname]
@@ -40,7 +42,11 @@ class Remove(Action):
                     self.any_sus_pids = True
                     if any(obs_success):
                         obs.set_success(True)
-                        self.action_success = True              
+                        self.action_success = True     
+            if self.action_success:
+                subnet = state.hostname_subnet_map[self.hostname]
+                if state.blocks:
+                    self.blocked = any(subnet in sublist for sublist in state.blocks.values())
             return obs
         else:
             return obs
@@ -53,7 +59,10 @@ class Remove(Action):
             else:
                 return 0.0
         else:
-            return 0.1
+            if self.blocked:
+                return 1.0
+            else:
+                return 0.1
     
     def __str__(self):
         return f"{self.__class__.__name__} {self.hostname}"
