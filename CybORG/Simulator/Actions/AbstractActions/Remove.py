@@ -62,7 +62,7 @@ class Remove(Action):
             if self.blocked:
                 return 1.0
             else:
-                return 0.1
+                return 0.2
     
     def __str__(self):
         return f"{self.__class__.__name__} {self.hostname}"

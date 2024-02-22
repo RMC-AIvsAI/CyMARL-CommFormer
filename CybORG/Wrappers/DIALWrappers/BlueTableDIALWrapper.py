@@ -41,12 +41,7 @@ class BlueTableDIALWrapper(BaseWrapper):
         if not self.agent_hosts.get(agent, None):
             self.agent_hosts[agent] = list(obs.keys())
         
-        #self.agent_blocks[agent] = []
-        for host, info in self.blue_info.items():
-            if host in self.agent_hosts[agent]:
-                info[-2] = 'None'
-        
-        self._process_last_action(agent)
+        self._process_last_action(agent, success)
         anomaly_obs = self._detect_anomalies(obs) if not baseline else obs
         del obs['success']
         #info = self._process_anomalies(anomaly_obs)
@@ -93,7 +88,7 @@ class BlueTableDIALWrapper(BaseWrapper):
             self.blue_info[hostname] = [str(subnet),str(ip),hostname, 'None','No']
         return self.blue_info
 
-    def _process_last_action(self, agent):
+    def _process_last_action(self, agent, success):
         action = self.get_last_action(agent=agent)
         if action is not None:
             name = action.__class__.__name__
@@ -113,9 +108,19 @@ class BlueTableDIALWrapper(BaseWrapper):
                 self.blue_info[hostname][-1] = 'No'
             if name == 'Remove':
                 compromised = self.blue_info[hostname][-1]
+                activity = self.blue_info[hostname][-2]
                 if compromised != 'No':
                     if compromised != 'Privileged':
-                        self.blue_info[hostname][-1] = 'Unknown'
+                        if activity == 'Exploit' and success == True:
+                            self.blue_info[hostname][-1] = 'No'
+                        else:
+                            self.blue_info[hostname][-1] = 'Unknown'
+
+        # Reset previous time step activities
+        #self.agent_blocks[agent] = []
+        for host, info in self.blue_info.items():
+            if host in self.agent_hosts[agent]:
+                info[-2] = 'None'
         """
         action = self.get_last_action(agent=agent)
         if action is not None:
