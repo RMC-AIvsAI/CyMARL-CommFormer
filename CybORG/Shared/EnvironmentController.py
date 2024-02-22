@@ -277,7 +277,7 @@ class EnvironmentController(CybORGLogger):
             self.reward[agent_name]['action_cost'] = sum([self.action[agent].cost for agent in self.team.keys() if team_name == self.team[agent_name]])
             if self.last_red_action is not None and self.last_red_action.name == 'DiscoverNetworkServices' and self.last_red_action.session != 0:
                 if self.action['Blue0'].name == 'Restore' and self.action['Blue0'].hostname == 'User2':
-                    self.reward[agent_name]['action_cost'] = 0
+                    self.reward[agent_name]['action_cost'] += 1
             #self.reward[agent_name]['block_cost'] = -1.0 * sum([len(values) for values in self.state.blocks.values()])
             #self.reward[agent_name]['block_cost'] = self._calculate_block_cost() if agent_name != 'Red' else 0
         
