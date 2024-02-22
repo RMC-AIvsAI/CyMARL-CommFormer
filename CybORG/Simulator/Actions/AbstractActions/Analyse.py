@@ -23,10 +23,11 @@ class Analyse(Action):
         #obs = monitor.execute(state)
         obs = Observation()
         parent_session: VelociraptorServer = state.sessions[self.agent][self.session]
-        if any(state.hosts[self.hostname].sessions['Red']):
-            self.action_success = True
-        else:
-            self.action_success = False
+        #if any(state.hosts[self.hostname].sessions['Red']):
+        #    self.action_success = True
+        #else:
+        #    self.action_success = False
+        self.action_success = False
         artefacts = [DensityScout, SigCheck]
         # find relevant session on the chosen host
         sessions = [s for s in state.sessions[self.agent].values() if s.hostname == self.hostname]
@@ -38,6 +39,13 @@ class Analyse(Action):
                 sub_action = artifact(agent=self.agent, session=self.session, target_session=session.ident)
                 sub_obs = sub_action.execute(state)
                 obs.combine_obs(sub_obs)
+            
+            if self.hostname in obs.data:
+                if 'Files' in obs.data[self.hostname]:
+                    for file in obs.data[self.hostname]['Files']:
+                        if 'Density' in file:
+                            if file['Density'] >= 0.9:
+                                self.action_success = True
             """
             if self.hostname in obs.data:
                 if 'Files' in obs.data[self.hostname]:
@@ -51,10 +59,10 @@ class Analyse(Action):
 
     @property
     def cost(self):
-        #if not self.action_success:
-        #    return -1.0
-        #else:
-        return -0.5
+        if not self.action_success:
+            return -0.5
+        else:
+            return 0.0
 
     def __str__(self):
         return f"{self.__class__.__name__} {self.hostname}"

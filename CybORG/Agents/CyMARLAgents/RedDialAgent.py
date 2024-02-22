@@ -75,7 +75,7 @@ class RedDialAgent(BaseAgent):
             exploit_time = exploit_info.get('time')
             delay = random.randint(2, 3)  # Random delay between 2 to 3 timesteps
             hostname = self.ip_host_map.get(ip_address)
-            if self.step_count - exploit_time > delay and hostname not in self.escalated_hosts:
+            if self.step_count - exploit_time >= delay and hostname not in self.escalated_hosts:
                 if hostname and self.sessions.get(hostname):
                     session_id = self.sessions[hostname]
                     self.action = PrivilegeEscalate(hostname=hostname, agent='Red', session=session_id, os_type=os_type)
@@ -85,7 +85,7 @@ class RedDialAgent(BaseAgent):
         keys = list(self.scanned_ips.keys())
         random.shuffle(keys)
         scanned_ips = {key: self.scanned_ips[key] for key in keys}
-        for ip_address, ports in scanned_ips.items():
+        for ip_address, info in scanned_ips.items():
             if ip_address in self.exploited_ips:  # Skip already exploited IPs
                 continue
 
@@ -100,8 +100,8 @@ class RedDialAgent(BaseAgent):
                             from_host = self.ip_host_map.get(i)
             session = self.sessions.get(from_host)
 
-            if session is not None and ports and from_host in self.escalated_hosts:
-                self.action = ExploitRemoteService(ip_address=ip_address, agent='Red', session=session, ports=ports)
+            if session is not None and info['ports'] and from_host in self.escalated_hosts:
+                self.action = ExploitRemoteService(ip_address=ip_address, agent='Red', session=session, ports=info['ports'])
                 return self.action
         # Default action if no other actions are applicable
         return Sleep() 
@@ -145,6 +145,7 @@ class RedDialAgent(BaseAgent):
                             self.host_ip_map.pop(host)
                             self.ip_host_map.pop(host_ip)
             elif name == 'DiscoverNetworkServices':
+                session = last_action.get_params()['session']
                 if observation['success'] == True:
                     for ip_address, info in observation.items():
                         if ip_address == 'success':
@@ -157,24 +158,34 @@ class RedDialAgent(BaseAgent):
                                     ip = connections['local_address']
                                     port = connections['local_port']
                                     if ip not in self.scanned_ips:
-                                        self.scanned_ips[ip] = [port]
-                                    if port not in self.scanned_ips[ip]:
-                                        self.scanned_ips[ip].append(port)
+                                        self.scanned_ips[ip] = {}
+                                        self.scanned_ips[ip]['session_used'] = session
+                                        self.scanned_ips[ip]['ports'] = [port]
+                                    else:
+                                        if port not in self.scanned_ips[ip]['ports']:
+                                            self.scanned_ips[ip]['ports'].append(port)
                 else:
                     for ip, info in observation.items():
                         if ip == 'success':
                             continue  
 
                         if 'Sessions' in info:
-                            subnet = self.ip_subnet_map[ip]
-                            host = self.discovered_subnet_host[subnet]
-                            host_ip = self.host_ip_map[host]
-                            self.discovered_subnet_host.pop(subnet)
-                            self.escalated_hosts.remove(host)
-                            self.exploited_ips.pop(host_ip)
-                            self.sessions.pop(host)
-                            self.host_ip_map.pop(host)
-                            self.ip_host_map.pop(host_ip)
+                            if session != 0:
+                                subnet = self.ip_subnet_map[ip]
+                                session_host = self.discovered_subnet_host[subnet]
+                                host_ip = self.host_ip_map[session_host]
+                                self.discovered_subnet_host.pop(subnet)
+                                self.escalated_hosts.remove(session_host)
+                                self.exploited_ips.pop(host_ip)
+                                self.sessions.pop(session_host)
+                                self.host_ip_map.pop(session_host)
+                                self.ip_host_map.pop(host_ip)
+                                for key, value in self.ip_subnet_map.items():
+                                    if key == ip:
+                                        continue
+                                    if value == subnet:
+                                        if key in self.scanned_ips:
+                                            self.scanned_ips.pop(key)
             elif name == 'ExploitRemoteService':
                 if observation['success'] == True:
                     for ip_address, info in observation.items():
@@ -206,17 +217,27 @@ class RedDialAgent(BaseAgent):
                             continue  
 
                         if 'Sessions' in info:
-                            subnet = self.ip_subnet_map[ip]
-                            host = [key for key, value in self.sessions.items() if value == session]
-                            #host = self.discovered_subnet_host[subnet]
-                            host_ip = self.host_ip_map[host[0]]
-                            if subnet in self.discovered_subnet_host and host[0] == self.discovered_subnet_host[subnet]:
-                                self.discovered_subnet_host.pop(subnet)
-                            self.escalated_hosts.remove(host[0])
-                            self.exploited_ips.pop(host_ip)
-                            self.sessions.pop(host[0])
-                            self.host_ip_map.pop(host[0])
-                            self.ip_host_map.pop(host_ip)
+                            if session != 0:
+                                subnet = self.ip_subnet_map[ip]
+                                host = [key for key, value in self.sessions.items() if value == session]
+                                #host = self.discovered_subnet_host[subnet]
+                                host_ip = self.host_ip_map[host[0]]
+                                if subnet in self.discovered_subnet_host and host[0] == self.discovered_subnet_host[subnet]:
+                                    self.discovered_subnet_host.pop(subnet)
+                                self.escalated_hosts.remove(host[0])
+                                self.exploited_ips.pop(host_ip)
+                                self.sessions.pop(host[0])
+                                self.host_ip_map.pop(host[0])
+                                self.ip_host_map.pop(host_ip)
+                                other_exploited_hosts_in_subnet = False
+                                for exploited_ip in self.exploited_ips:
+                                    if self.ip_subnet_map[exploited_ip] == subnet:
+                                        other_exploited_hosts_in_subnet = True
+                                if not other_exploited_hosts_in_subnet:
+                                    for key, value in self.ip_subnet_map.items():
+                                        if value == subnet:
+                                            if key in self.scanned_ips:
+                                                self.scanned_ips.pop(key)
             elif name == 'PrivilegeEscalate':
                 hostname = last_action.get_params()['hostname']
                 if observation['success'] == True:
@@ -277,7 +298,7 @@ class RedDialAgent(BaseAgent):
                 self.ip_subnet_map[ip_address] = subnet
                 self.discovered_subnet_host[subnet] = hostname
                 if ip_address not in self.scanned_ips:
-                    self.scanned_ips[ip_address] = []
+                    self.scanned_ips[ip_address] = {}
                 
         if 'Sessions' in user0_data:
             session_info = user0_data['Sessions'][0]  # Assuming there's at least one session
