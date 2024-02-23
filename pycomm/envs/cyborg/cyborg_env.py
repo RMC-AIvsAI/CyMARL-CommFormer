@@ -157,8 +157,8 @@ class CyborgEnv(MultiAgentEnv):
         For a 2 Agent game we are limiting communications. For base scenario, where Red starts in Subnet 1, 
         only agent 2 needs to communicate if it has detected anything
         """
-        if agent_id == 1:
-            return 0
+        #if agent_id == 1:
+        #    return 0
         
         for i, obs in enumerate(self._obs):
             if i != agent_id:
