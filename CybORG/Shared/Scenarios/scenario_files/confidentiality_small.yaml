@@ -27,7 +27,6 @@ Agents:
       - Monitor
       - Remove
       - Restore
-      - Analyse
     agent_type: SleepAgent
     reward_calculator_type: BlueConfidentiality
     starting_sessions:
@@ -84,7 +83,6 @@ Agents:
       - Monitor
       - Remove
       - Restore
-      - Analyse
     agent_type: SleepAgent
     reward_calculator_type: BlueConfidentiality
     starting_sessions:

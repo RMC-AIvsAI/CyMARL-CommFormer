@@ -1,6 +1,7 @@
 import inspect
 import os
 import sys
+import copy
 
 import torch
 from gym.spaces import flatdim
@@ -32,11 +33,14 @@ class CyborgEnv(MultiAgentEnv):
         self.sender = []
         self.r_t = 0.0
         self.max_hosts = max(list(len(self.get_agent_hosts(agent)) for agent in self._agent_ids))
+        self.all_obs = {}
 
     def reset(self):
         # Returns initial observations and states
         self._obs = self._env.reset()
         self._obs = list(self._obs.values())
+        self.all_obs = {}
+        self.all_obs[self.step_count] = copy.deepcopy(self._obs)
         self.step_count = 0
 
         return self.get_state()
@@ -49,6 +53,7 @@ class CyborgEnv(MultiAgentEnv):
         self._obs, reward, done, info = self._env.step(action_dict)
         self._obs = list(self._obs.values())
         self.step_count += 1
+        self.all_obs[self.step_count] = copy.deepcopy(self._obs)
         self.r_t = list(reward.values())[0]
         return torch.tensor(list(reward.values())), int(all(done.values())), str(info['Red']['action'])
 
@@ -160,7 +165,7 @@ class CyborgEnv(MultiAgentEnv):
         #if agent_id == 1:
         #    return 0
         
-        for i, obs in enumerate(self._obs):
+        for i, obs in enumerate(self.all_obs[step]):
             if i != agent_id:
                 activity = any(1 in host for host in obs)
                 if activity:
