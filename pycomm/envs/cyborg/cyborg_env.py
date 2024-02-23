@@ -37,11 +37,11 @@ class CyborgEnv(MultiAgentEnv):
 
     def reset(self):
         # Returns initial observations and states
+        self.step_count = 0
         self._obs = self._env.reset()
         self._obs = list(self._obs.values())
         self.all_obs = {}
         self.all_obs[self.step_count] = copy.deepcopy(self._obs)
-        self.step_count = 0
 
         return self.get_state()
     
