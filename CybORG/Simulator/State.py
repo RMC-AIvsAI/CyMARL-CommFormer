@@ -49,6 +49,7 @@ class State(CybORGLogger):
         # hacky fix to enable operational firewall for Scenario1b and Scenario2
         self.operational_firewall = scenario.operational_firewall
         self.blocks = {}
+        self.actions = []
 
     def get_true_state(self, info: dict) -> Observation:
         true_obs = Observation()

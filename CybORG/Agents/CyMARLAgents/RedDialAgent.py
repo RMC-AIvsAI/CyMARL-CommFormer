@@ -73,7 +73,7 @@ class RedDialAgent(BaseAgent):
         for ip_address, exploit_info in exploited_ips.items():
             os_type = exploit_info.get('os')
             exploit_time = exploit_info.get('time')
-            delay = random.randint(2, 3)  # Random delay between 2 to 3 timesteps
+            delay = random.randint(2, 4)  # Random delay between 2 to 3 timesteps
             hostname = self.ip_host_map.get(ip_address)
             if self.step_count - exploit_time >= delay and hostname not in self.escalated_hosts:
                 if hostname and self.sessions.get(hostname):

@@ -59,7 +59,6 @@ class EnvironmentController(CybORGLogger):
         self.reward = {}
         self.INFO_DICT = {}
         self.action = {}
-        self.last_red_action = None
         self.observation = {}
         self.INFO_DICT['True'] = {}
         for host in scenario.hosts:
@@ -99,7 +98,6 @@ class EnvironmentController(CybORGLogger):
         """
         self.reward = {}
         self.action = {}
-        self.last_red_action = None
         self.observation = {}
         self.step_count = 0
         if np_random is not None:
@@ -238,9 +236,9 @@ class EnvironmentController(CybORGLogger):
                 actions[agent_name] = agent_object.get_action(self.get_last_observation(agent_name))
             if agent_name == 'Red' and not skip_valid_action_check:
                 actions[agent_name] = self.replace_action_if_invalid(actions[agent_name], agent_object)
-        if self.action and 'Red' in self.action:
-            self.last_red_action = self.action['Red']
+
         self.action = actions
+        self.state.actions.append(actions)
         #actions = self.sort_action_order(actions)
 
         #sort the actions such that red always goes first
@@ -275,9 +273,6 @@ class EnvironmentController(CybORGLogger):
 
         for agent_name, team_name in self.team_assignments.items():
             self.reward[agent_name]['action_cost'] = sum([self.action[agent].cost for agent in self.team.keys() if team_name == self.team[agent_name]])
-            if self.last_red_action is not None and self.last_red_action.name == 'DiscoverNetworkServices' and self.last_red_action.session != 0:
-                if self.action['Blue0'].name == 'Restore' and self.action['Blue0'].hostname == 'User2':
-                    self.reward[agent_name]['action_cost'] += 1.5
             #self.reward[agent_name]['block_cost'] = -1.0 * sum([len(values) for values in self.state.blocks.values()])
             #self.reward[agent_name]['block_cost'] = self._calculate_block_cost() if agent_name != 'Red' else 0
         

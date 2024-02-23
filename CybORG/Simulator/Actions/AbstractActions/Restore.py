@@ -16,9 +16,9 @@ class Restore(Action):
         self.blocked = False
         self.action_cost = 0
         self.mapping = {
-            'Low': 1.0,
-            'Medium': 2.0,
-            'High': 10.0
+            'Low': -1.0,
+            'Medium': -2.0,
+            'High': -10.0
         }
 
     def execute(self, state) -> Observation:
@@ -27,6 +27,14 @@ class Restore(Action):
         #obs = monitor.execute(state)
         self.blocked = False
         self.action_cost = self.mapping[state.scenario.hosts[self.hostname].confidentiality_value]
+        if len(state.actions) > 3:
+            if self.hostname == 'User2':
+                if state.actions[-2]['Red'].name == 'DiscoverNetworkServices' and state.actions[-2]['Red'].session != 0:
+                    if state.actions[-3]['Red'].name == 'DiscoverNetworkServices':
+                        red_session = [sess for sess in state.sessions['Red'].values() if sess.hostname == self.hostname and (sess.username == 'SYSTEM' or sess.username == 'root')]
+                        if red_session:
+                            self.action_cost = 0.5
+
         obs = Observation()
         if self.session not in state.sessions[self.agent]:
             obs.set_success(False)
@@ -52,9 +60,9 @@ class Restore(Action):
     @property
     def cost(self):
         if self.blocked:
-            return -0.5 * self.action_cost
+            return 0.5 * self.action_cost
         else:
-            return -1 * self.action_cost
+            return 1 * self.action_cost
 
     def __str__(self):
         return f"{self.__class__.__name__} {self.hostname}"
