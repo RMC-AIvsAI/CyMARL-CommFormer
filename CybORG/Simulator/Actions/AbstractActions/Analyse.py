@@ -31,7 +31,14 @@ class Analyse(Action):
         artefacts = [DensityScout, SigCheck]
         # find relevant session on the chosen host
         sessions = [s for s in state.sessions[self.agent].values() if s.hostname == self.hostname]
-        if len(sessions) > 0:
+        # find other agents action
+        other_agent_actions = [action for agent, action in state.actions[-1].items() if agent != self.agent and agent != 'Red']
+        action_valid = False
+        if any(other_agent_actions):
+            if other_agent_actions[0].name == 'Block' and other_agent_actions[0].subnet == state.hostname_subnet_map[self.hostname]:
+                action_valid = True
+        
+        if len(sessions) > 0 and action_valid:
             session = state.np_random.choice(sessions)
             # run the artifacts on the chosen host
             #obs = Observation(True)
@@ -46,12 +53,10 @@ class Analyse(Action):
                         if 'Density' in file:
                             if file['Density'] >= 0.9:
                                 self.action_success = True
-            """
-            if self.hostname in obs.data:
-                if 'Files' in obs.data[self.hostname]:
-                    red_pid = [s for s in state.sessions['Red'].values() if s.hostname == self.hostname][0].pid
-                    parent_session.add_sus_pids(hostname=self.hostname, pid=int(red_pid))
-            """
+
+                                red_pid = [s for s in state.sessions['Red'].values() if s.hostname == self.hostname][0].pid
+                                parent_session.add_sus_pids(hostname=self.hostname, pid=int(red_pid))
+                                             
             return obs
         else:
             obs.set_success(False)

@@ -21,6 +21,10 @@ class Block(Action):
         sub_action = BlockZoneTraffic(session=self.session, agent=self.agent, subnet=self.subnet)
         sub_action.execute(state)
         return obs
+    
+    @property
+    def cost(self):
+        return -1.0
 
     def __str__(self):
         return f"{self.__class__.__name__} {self.subnet}"

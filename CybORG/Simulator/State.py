@@ -202,6 +202,12 @@ class State(CybORGLogger):
                         self.link_diagram.add_edge(hostname, data_link)
         self.update_data_links()
 
+    def update_actions(self, actions):
+        self.actions.append(actions)
+    
+    def reset_blocks(self):
+        self.blocks = {}
+
     def set_np_random(self, np_random):
         self.np_random = np_random
         for hostname in self.hosts:

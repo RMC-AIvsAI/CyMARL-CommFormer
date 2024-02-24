@@ -40,7 +40,7 @@ class BlueTableDIALWrapper(BaseWrapper):
 
         if not self.agent_hosts.get(agent, None):
             self.agent_hosts[agent] = list(obs.keys())
-        
+        self.agent_blocks[agent] = []
         self._process_last_action(agent, success)
         anomaly_obs = self._detect_anomalies(obs) if not baseline else obs
         del obs['success']
@@ -117,7 +117,6 @@ class BlueTableDIALWrapper(BaseWrapper):
                             self.blue_info[hostname][-1] = 'Unknown'
 
         # Reset previous time step activities
-        #self.agent_blocks[agent] = []
         for host, info in self.blue_info.items():
             if host in self.agent_hosts[agent]:
                 info[-2] = 'None'
