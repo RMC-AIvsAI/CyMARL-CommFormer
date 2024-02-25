@@ -51,7 +51,7 @@ class Analyse(Action):
                 if 'Files' in obs.data[self.hostname]:
                     for file in obs.data[self.hostname]['Files']:
                         if 'Density' in file:
-                            if file['Density'] >= 0.9:
+                            if file['Density'] >= 0.8:
                                 self.action_success = True
 
                                 red_pid = [s for s in state.sessions['Red'].values() if s.hostname == self.hostname][0].pid
