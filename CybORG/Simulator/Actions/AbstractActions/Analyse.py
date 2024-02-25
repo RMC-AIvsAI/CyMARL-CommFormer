@@ -65,7 +65,7 @@ class Analyse(Action):
     @property
     def cost(self):
         if not self.action_success:
-            return -0.5
+            return -5.0
         else:
             return 0.0
 
