@@ -11,28 +11,17 @@ class Block(Action):
         self.subnet = subnet
         self.agent = agent
         self.session = session
-        self.cost_multiplier = 1
         self.action_cost = 0
 
     def execute(self, state) -> Observation:
-        # perform monitor at start of action
-        #monitor = Monitor(session=self.session, agent=self.agent)
-        #obs = monitor.execute(state)
-        if len(state.actions) > 1:
-            last_agent_action= [action for agent, action in state.actions[-2].items() if agent == self.agent]
-            
-            if last_agent_action[0].name == 'Block' and last_agent_action[0].subnet == self.subnet:
-                self.cost_multiplier *= 2
-            else:
-                self.cost_multiplier = 1
+        self.action_cost = -5.0
         other_agent_actions = [action for agent, action in state.actions[-1].items() if agent != self.agent and agent != 'Red']
         if other_agent_actions[0].name == 'Analyse':
-            self.action_cost = 0
-        else:
-            self.action_cost = -1.0 * self.cost_multiplier
-        
+            red_sessions = state.hosts[other_agent_actions[0].hostname].sessions['Red']
+            if any(red_sessions) and (state.sessions['Red'][red_sessions[0]].username == 'root' or state.sessions['Red'][red_sessions[0]].username == 'SYSTEM'):
+                self.action_cost = 0
+              
         obs = Observation(True)
-        parent_session: VelociraptorServer = state.sessions[self.agent][self.session]
         sub_action = BlockZoneTraffic(session=self.session, agent=self.agent, subnet=self.subnet)
         sub_action.execute(state)
         return obs

@@ -13,24 +13,18 @@ class Restore(Action):
         self.agent = agent
         self.session = session
         self.hostname = hostname
-        #self.blocked = False
         self.action_cost = 0
         self.mapping = {
-            'Low': 1.0,
-            'Medium': 2.0,
+            'Low': 0.1,
+            'Medium': 1.0,
             'High': 10.0
         }
 
     def execute(self, state) -> Observation:
-        # perform monitor at start of action
-        #monitor = Monitor(session=self.session, agent=self.agent)
-        #obs = monitor.execute(state)
-        #self.blocked = False
         self.action_cost = -1 * self.mapping[state.scenario.hosts[self.hostname].confidentiality_value]
 
-        obs = Observation()
+        obs = Observation(False)
         if self.session not in state.sessions[self.agent]:
-            obs.set_success(False)
             return obs
         parent_session: VelociraptorServer = state.sessions[self.agent][self.session]
         # find relevant session on the chosen host
@@ -42,17 +36,8 @@ class Restore(Action):
                 # restore host
                 action = RestoreFromBackup(session=self.session, agent=self.agent, target_session=session.ident)
                 action.execute(state)
-                # remove suspicious files
-                #subnet = state.hostname_subnet_map[self.hostname]
-                #if state.blocks:
-                #    self.blocked = any(subnet in sublist for sublist in state.blocks.values())
-            else:
-                obs.set_success(False)
 
-            return obs
-        else:
-            obs.set_success(False)
-            return obs
+        return obs
 
     @property
     def cost(self):

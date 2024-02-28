@@ -167,7 +167,7 @@ class CyborgEnv(MultiAgentEnv):
         
         for i, obs in enumerate(self.all_obs[step]):
             if i != agent_id:
-                activity = any(1 in host for host in obs)
+                activity = any(1 in host for host in obs if len(host) == 4)
                 if activity:
                     comm_lim = 1
                 else:

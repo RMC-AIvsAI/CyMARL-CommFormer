@@ -54,29 +54,33 @@ class PwnRewardCalculator(RewardCalculator):
                             # count the number of root sessions
                             if session['Username'] == 'root':
                                 confidentiality_value = self.mapping[self.scenario.get_host(host).get_confidentiality_value('Low')]
-                                root_sessions += (confidentiality_value * 2)
-                                self.compromised_hosts[host] = (confidentiality_value * 2)
-                                break
-                            else:
-                                # count the number of user sessions
-                                confidentiality_value = self.mapping[self.scenario.get_host(host).get_confidentiality_value('Low')]
-                                user_sessions += confidentiality_value
+                                #root_sessions += (confidentiality_value * 2)
+                                root_sessions += confidentiality_value
+                                #self.compromised_hosts[host] = (confidentiality_value * 2)
                                 self.compromised_hosts[host] = confidentiality_value
                                 break
+                            #else:
+                                # count the number of user sessions
+                            #    confidentiality_value = self.mapping[self.scenario.get_host(host).get_confidentiality_value('Low')]
+                            #    user_sessions += confidentiality_value
+                            #    self.compromised_hosts[host] = confidentiality_value
+                            #    break
                         
                         if info['System info']['OSType'] == OperatingSystemType.WINDOWS:
                             # count the number of SYSTEM sessions
                             if session['Username'] == 'SYSTEM':
                                 confidentiality_value = self.mapping[self.scenario.get_host(host).get_confidentiality_value('Low')]
-                                system_sessions += (confidentiality_value * 2)
-                                self.compromised_hosts[host] = (confidentiality_value * 2)
-                                break
-                            else:
-                                # count the number of user sessions
-                                confidentiality_value = self.mapping[self.scenario.get_host(host).get_confidentiality_value('Low')]
-                                user_sessions += confidentiality_value
+                                #system_sessions += (confidentiality_value * 2)
+                                system_sessions += confidentiality_value
+                                #self.compromised_hosts[host] = (confidentiality_value * 2)
                                 self.compromised_hosts[host] = confidentiality_value
                                 break
+                            #else:
+                            #    # count the number of user sessions
+                            #    confidentiality_value = self.mapping[self.scenario.get_host(host).get_confidentiality_value('Low')]
+                            #    user_sessions += confidentiality_value
+                            #    self.compromised_hosts[host] = confidentiality_value
+                            #    break
 
 
         # find the difference from the old privileged sessions

@@ -95,17 +95,17 @@ class BlueTableDIALWrapper(BaseWrapper):
             name = action.__class__.__name__
             hostname = action.get_params()['hostname'] if name in ('Analyse', 'Restore','Remove') else None
             subnet = action.get_params()['subnet'] if name in ('Block', 'UnBlock') else None
-            if name == 'Analyse' and success == True:
+            #if name == 'Analyse' and success == True:
             #    compromised = self.blue_info[hostname][-1]
             #    if compromised == 'Unknown':
-                self.blue_info[hostname][-1] = 'No'
+            #    self.blue_info[hostname][-1] = 'No'
             if name == 'Block':
                 if subnet not in self.agent_blocks[agent]:
                     self.agent_blocks[agent].append(subnet)
             if name == 'UnBlock':
                 if subnet in self.agent_blocks[agent]:
                     self.agent_blocks[agent].remove(subnet)
-            if name == 'Restore':
+            if name == 'Restore' and success == True:
                 self.blue_info[hostname][-1] = 'No'
             if name == 'Remove':
                 compromised = self.blue_info[hostname][-1]
@@ -191,9 +191,9 @@ class BlueTableDIALWrapper(BaseWrapper):
             if 'Files' in host_anomalies:
                 priv_malware = [f['Density'] >= 0.9 for f in host_anomalies['Files']]
                 user_malware = [f['Density'] == 0.8 for f in host_anomalies['Files']]
-                if any(user_malware):
+                #if any(user_malware):
                     #info[hostid][-1] = 'User'
-                    self.blue_info[hostid][-1] = 'User'
+                    #self.blue_info[hostid][-1] = 'User'
                 if any(priv_malware):
                     #info[hostid][-1] = 'Privileged'
                     self.blue_info[hostid][-1] = 'Privileged'
