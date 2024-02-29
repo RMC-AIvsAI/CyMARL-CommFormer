@@ -117,7 +117,7 @@ class Arena:
 				episode.step_records[step + 1].hidden[agent_idx] = hidden_t.squeeze()
 
 				# Choose next action and comm using eps-greedy selector
-				action_range, comm_range = self.get_action_range(opt.game_action_space_total, step, agent_idx)
+				action_range, comm_range = self.get_action_range(comm, opt.game_action_space, opt.game_action_space_total, step, agent_idx)
 				(action, action_value), (comm_vector) = \
 					agent.select_action_and_comm(action_range, comm_range, q_t, eps=eps, train_mode=train_mode)
 
@@ -178,7 +178,7 @@ class Arena:
 						hidden_target_t.squeeze()
 
 					# Choose next arg max action and comm
-					action_range_t, comm_range_t = self.get_action_range(opt.game_action_space_total, step, agent_idx)
+					action_range_t, comm_range_t = self.get_action_range(comm_target, opt.game_action_space, opt.game_action_space_total, step, agent_idx)
 					(action, action_value), (comm_vector) = \
 						agent_target.select_action_and_comm(action_range_t, comm_range_t, q_target_t, eps=0, target=True, train_mode=True)
 
@@ -217,21 +217,21 @@ class Arena:
 
 		return reward, terminal, state.to(dtype=data_dtype), info
 	
-	def get_action_range(self, a_total, step, agent_idx):
+	def get_action_range(self, comm, action_space, a_total, step, agent_idx):
 		#TODO incase if implementing valid action check which will result in action space being different for all agents
 
-		action_range = torch.zeros((self.opt.bs_run, 2), dtype=torch.long).to(self.device)
+		action_range = torch.zeros((self.opt.bs_run, action_space), dtype=torch.long).to(self.device)
 		comm_range = torch.zeros((self.opt.bs_run, 2), dtype=torch.long).to(self.device)
-		action_range_data = [a_total, step, agent_idx]
-		for parent_conn in self.parent_conns:
+		for bs, parent_conn in enumerate(self.parent_conns):
+			action_range_data = [comm[bs].view(-1).detach(), step, agent_idx]
 			parent_conn.send(("get_action_range", action_range_data))
 
 		# Get the action range
 		for bs, parent_conn in enumerate(self.parent_conns):
 			data = parent_conn.recv()
 
-			action_range[bs] = data[0]
-			comm_range[bs] = data[1]
+			action_range[bs] = data
+			comm_range[bs] = torch.tensor([action_space + 1, a_total], dtype=torch.long)
 			
 		return action_range, comm_range
 	
@@ -294,10 +294,10 @@ def env_worker(remote, env_fn):
 				agent_id = data[1]
 				remote.send(env.get_comm_limited(step, agent_id))
 			elif cmd == "get_action_range":
-				a_total = data[0]
+				comm = data[0]
 				step = data[1]
 				agent_id = data[2]
-				remote.send(env.get_action_range(a_total, step, agent_id))
+				remote.send(env.get_avail_agent_actions(comm, step, agent_id))
 			elif cmd == "close":
 				env.close()
 				remote.close()

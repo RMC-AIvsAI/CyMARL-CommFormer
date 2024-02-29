@@ -55,12 +55,14 @@ class CNetAgent:
 
 		# Get action + comm
 		for b in range(opt.bs_run):
-			a_range = range(action_range[b, 0].item() - 1, action_range[b, 1].item())
+			a_range = [i for i, x in enumerate(action_range[b]) if x == 1]
+			#a_range = range(action_range[b, 0].item() - 1, action_range[b, 1].item())
 			if should_select_random_a[b]:
 				action[b] = self._random_choice(a_range)
 				action_value[b] = q[b, action[b]]
 			else:
-				action_value[b], action[b] = q[b, a_range].max(0)
+				action_value[b], index = q[b, a_range].max(0)
+				action[b] = torch.tensor(a_range)[index]
 			action[b] = action[b] + 1
 
 			q_c_range = range(opt.game_action_space, opt.game_action_space_total)

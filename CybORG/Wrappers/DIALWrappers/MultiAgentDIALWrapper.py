@@ -82,6 +82,9 @@ class MultiAgentDIALWrapper(BaseWrapper):
         '''
         return self._action_spaces[agent]
 
+    def get_possible_actions(self, agent):
+        return self.env.get_possible_actions(agent)
+    
     @property
     def observation_spaces(self):
         '''

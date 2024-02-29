@@ -111,6 +111,9 @@ class TrueTableWrapper(BaseWrapper):
     def get_rewards(self):
         return self.get_attr('get_rewards')()
 
+    def get_possible_actions(self, agent):
+        return self.env.get_possible_actions(agent)
+    
 def true_obs_to_table(true_obs,env):
     print('Scanned column likely inaccurate.')
     wrapper = TrueTableWrapper(env,observer_mode=False)

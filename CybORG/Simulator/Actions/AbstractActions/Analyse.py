@@ -21,7 +21,7 @@ class Analyse(Action):
         obs = Observation()
         parent_session: VelociraptorServer = state.sessions[self.agent][self.session]
 
-        self.action_cost = -10.0
+        self.action_cost = -0.5
         artefacts = [DensityScout, SigCheck]
         # find relevant session on the chosen host
         sessions = [s for s in state.sessions[self.agent].values() if s.hostname == self.hostname]

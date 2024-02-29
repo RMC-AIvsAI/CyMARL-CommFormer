@@ -30,8 +30,6 @@ class CyborgEnv(MultiAgentEnv):
         )
         self.longest_turn_vector_obs = flatdim(self.longest_observation_space) + 1
         self.step_count = 0
-        self.sender = []
-        self.r_t = 0.0
         self.max_hosts = max(list(len(self.get_agent_hosts(agent)) for agent in self._agent_ids))
         self.all_obs = {}
 
@@ -54,7 +52,6 @@ class CyborgEnv(MultiAgentEnv):
         self._obs = list(self._obs.values())
         self.step_count += 1
         self.all_obs[self.step_count] = copy.deepcopy(self._obs)
-        self.r_t = list(reward.values())[0]
         return torch.tensor(list(reward.values())), int(all(done.values())), str(info['Red']['action'])
 
     def get_obs(self):
@@ -73,7 +70,6 @@ class CyborgEnv(MultiAgentEnv):
         
         if self.step_count < self.episode_limit:
             state = []
-
             for agent in range(self.n_agents):
                 agent_obs = self._obs[agent]
                 flattened_obs = sum(agent_obs, [])  # Concatenate sublists
@@ -88,6 +84,9 @@ class CyborgEnv(MultiAgentEnv):
         # Returns the shape of the state
         return self.n_agents * flatdim(self.longest_observation_space)
 
+    def get_possible_actions(self, agent):
+        return self._env.get_possible_actions(agent)
+    
     def get_avail_actions(self):
         avail_actions = []
         for agent_id in range(self.n_agents):
@@ -95,17 +94,27 @@ class CyborgEnv(MultiAgentEnv):
             avail_actions.append(avail_agent)
         return avail_actions
 
-    def get_avail_agent_actions(self, agent_id):
+    def get_avail_agent_actions(self, comm_vector, step, agent_id):
         # Returns the available actions for agent_id 
         agent_name = self._agent_ids[agent_id]
-        if self.action_masking:
-            action_dict = self._env.action_space(agent_name)
-            valid = list(map(int, self._env.get_action_mask(agent=agent_name)))
-        else:
-            valid = flatdim(self._env.action_space(agent_name)) * [1]
+        actions = self.get_possible_actions(agent_name)
+        valid_actions = copy.deepcopy(actions)
+        obs = self.all_obs[step][agent_id]
+        for i in range(len(valid_actions)):
+            if i == 0 or i == len(valid_actions) - 1: # Sleep action and block action is always available
+                valid_actions[i] = 1
+            else:
+                host_obs = obs[(i - 1) % self.max_hosts]
+                if sum(host_obs) > 1: # If he host has more than 1 bit then all actions are avaliable
+                    valid_actions[i] = 1
+                elif sum(host_obs) == 1 and host_obs[0] == 0: # If he host has only 1 bit in its obs and the scan bit is 0 then all actions are avaliable
+                    valid_actions[i] = 1
+                elif actions[i].name == 'Analyse' and comm_vector is not None and comm_vector >= 0.5:
+                    valid_actions[i] = 1
+                else:
+                    valid_actions[i] = 0
 
-        invalid = [0] * (self.longest_action_space.n - len(valid))
-        return valid + invalid
+        return torch.tensor(valid_actions, dtype=torch.long)
 
     def get_total_actions(self):
         # Returns the total number of actions an agent could ever take 
@@ -121,18 +130,14 @@ class CyborgEnv(MultiAgentEnv):
     def seed(self):
         return self._env.seed
 
-    def save_replay(self):
-        pass
-
     def get_stats(self, steps):
         #TODO
         return 0
     
-    def get_action_range(self, a_total, step, agent_id):
+    def get_action_range(self, step, agent_id):
 
         action_dtype = torch.long
         action_range = torch.zeros((2), dtype=action_dtype)
-        comm_range = torch.zeros((2), dtype=action_dtype)
 
         agent_name = self._agent_ids[agent_id]
         action_space = flatdim(self._env.action_space(agent_name))
@@ -143,19 +148,7 @@ class CyborgEnv(MultiAgentEnv):
             #action_range = torch.tensor([1, action_space-2], dtype=action_dtype)
         #else:
         action_range = torch.tensor([1, action_space], dtype=action_dtype)
-        comm_range = torch.tensor([self.get_total_actions() + 1, a_total], dtype=action_dtype)
-        return action_range, comm_range
-
-    def _update_sender(self):
-        sender = []
-        for agent in range(self.n_agents):
-            agent_obs = self.get_obs_agent(agent)
-            value = 0
-            for i, host in enumerate(agent_obs):
-                if host[1] == 1:
-                    value = 1
-            sender.append(value)
-        self.sender.append(sender)
+        return action_range
 
     def get_comm_limited(self, step, agent_id):
         """
@@ -164,8 +157,9 @@ class CyborgEnv(MultiAgentEnv):
         """
         #if agent_id == 1:
         #    return 0
-        
-        for i, obs in enumerate(self.all_obs[step]):
+        if step == 0:
+            return 0
+        for i, obs in enumerate(self.all_obs[step-1]):
             if i != agent_id:
                 activity = any(1 in host for host in obs if len(host) == 4)
                 if activity:

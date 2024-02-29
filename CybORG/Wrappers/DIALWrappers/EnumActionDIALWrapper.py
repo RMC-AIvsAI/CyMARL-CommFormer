@@ -81,6 +81,6 @@ class EnumActionDIALWrapper(BaseWrapper):
         self.possible_actions[agent] = possible_actions
         return len(possible_actions)
     
-    def get_actions(self, agent):
+    def get_possible_actions(self, agent):
         return self.possible_actions[agent]
 

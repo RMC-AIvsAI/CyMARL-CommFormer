@@ -95,10 +95,10 @@ class BlueTableDIALWrapper(BaseWrapper):
             name = action.__class__.__name__
             hostname = action.get_params()['hostname'] if name in ('Analyse', 'Restore','Remove') else None
             subnet = action.get_params()['subnet'] if name in ('Block', 'UnBlock') else None
-            #if name == 'Analyse' and success == True:
-            #    compromised = self.blue_info[hostname][-1]
-            #    if compromised == 'Unknown':
-            #    self.blue_info[hostname][-1] = 'No'
+            if name == 'Analyse' and success == True:
+                compromised = self.blue_info[hostname][-1]
+                if compromised == 'Unknown':
+                    self.blue_info[hostname][-1] = 'No'
             if name == 'Block':
                 if subnet not in self.agent_blocks[agent]:
                     self.agent_blocks[agent].append(subnet)
@@ -109,10 +109,9 @@ class BlueTableDIALWrapper(BaseWrapper):
                 self.blue_info[hostname][-1] = 'No'
             if name == 'Remove':
                 compromised = self.blue_info[hostname][-1]
-                activity = self.blue_info[hostname][-2]
                 if compromised != 'No':
                     if compromised != 'Privileged':
-                        if activity == 'Exploit' and success == True:
+                        if success == True:
                             self.blue_info[hostname][-1] = 'No'
                         else:
                             self.blue_info[hostname][-1] = 'Unknown'
@@ -302,7 +301,10 @@ class BlueTableDIALWrapper(BaseWrapper):
 
     def get_action_space(self,agent):
         return self.env.get_action_space(agent)
-
+    
+    def get_possible_actions(self, agent):
+        return self.env.get_possible_actions(agent)
+    
     def get_last_action(self,agent):
         return self.get_attr('get_last_action')(agent)
 
