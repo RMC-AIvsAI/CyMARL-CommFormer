@@ -223,7 +223,7 @@ class Arena:
 		action_range = torch.zeros((self.opt.bs_run, action_space), dtype=torch.long).to(self.device)
 		comm_range = torch.zeros((self.opt.bs_run, 2), dtype=torch.long).to(self.device)
 		for bs, parent_conn in enumerate(self.parent_conns):
-			action_range_data = [comm[bs].view(-1).detach(), step, agent_idx]
+			action_range_data = [comm[bs].view(-1).detach() if comm is not None else None, step, agent_idx]
 			parent_conn.send(("get_action_range", action_range_data))
 
 		# Get the action range

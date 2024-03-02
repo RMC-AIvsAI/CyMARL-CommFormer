@@ -7,5 +7,6 @@ results/dial
 learning-to-communicate/
 pycomm/test.py
 pycomm/tester.py
+pymarl2/tester.py
 pycomm/games
 .vscode/

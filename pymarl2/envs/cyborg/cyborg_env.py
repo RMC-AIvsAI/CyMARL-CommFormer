@@ -1,5 +1,6 @@
 import inspect
 import os
+import copy
 
 import numpy as np
 from pymarl2.envs.multiagentenv import MultiAgentEnv
@@ -27,7 +28,8 @@ class CyborgMultiAgentEnv(MultiAgentEnv):
         self.longest_observation_space = max(
             self._env.observation_spaces.values(), key=lambda x: x.shape
         )
-
+        self.max_hosts = max(list(len(self.get_agent_hosts(agent)) for agent in self._agent_ids))
+        
     def step(self, actions):
         """ Returns reward, terminated, info """
         assert(len(actions) == self.n_agents)
@@ -58,7 +60,7 @@ class CyborgMultiAgentEnv(MultiAgentEnv):
         return flatdim(self.longest_observation_space)
 
     def get_state(self):
-        return np.concatenate(self._obs, axis=0).flatten().astype(np.float32)
+        return np.concatenate(self.get_obs(), axis=0).flatten().astype(np.float32)
 
     def get_state_size(self):
         """ Returns the shape of the state"""
@@ -73,16 +75,28 @@ class CyborgMultiAgentEnv(MultiAgentEnv):
 
     def get_avail_agent_actions(self, agent_id):
         """ Returns the available actions for agent_id """
+
         agent_name = self._agent_ids[agent_id]
-        if self.action_masking:
-            action_dict = self._env.action_space(agent_name)
-            valid = list(map(int, self._env.get_action_mask(agent=agent_name)))
-        else:
-            valid = flatdim(self._env.action_space(agent_name)) * [1]
+        actions = self.get_possible_actions(agent_name)
+        valid_actions = copy.deepcopy(actions)
+        obs = self._obs[agent_id]
+        for i in range(len(valid_actions)):
+            if i == 0 or i == len(valid_actions) - 1: # Sleep action and block action is always available
+                valid_actions[i] = 1
+            else:
+                host_obs = obs[(i - 1) % self.max_hosts]
+                if sum(host_obs) > 1: # If he host has more than 1 bit then all actions are avaliable
+                    valid_actions[i] = 1
+                elif sum(host_obs) == 1 and host_obs[0] == 0: # If he host has only 1 bit in its obs and the scan bit is 0 then all actions are avaliable
+                    valid_actions[i] = 1
+                else:
+                    valid_actions[i] = 0
 
-        invalid = [0] * (self.longest_action_space.n - len(valid))
-        return valid + invalid
+        return valid_actions
 
+    def get_possible_actions(self, agent):
+        return self._env.get_possible_actions(agent)
+    
     def get_total_actions(self):
         """ Returns the total number of actions an agent could ever take """
         # TODO: This is only suitable for a discrete 1 dimensional action space for each agent
@@ -119,8 +133,11 @@ class CyborgMultiAgentEnv(MultiAgentEnv):
         #return trace
         return {}
 
+    def get_agent_hosts(self, agent):
+        return self._env.get_agent_hosts(agent)
+    
     def _wrap_env(self, env, wrapper_type):
-        if wrapper_type == 'table':
+        if wrapper_type == 'vector':
             return MultiAgentDIALWrapper(BlueTableDIALWrapper(EnumActionDIALWrapper(env), output_mode='vector'))
         else:
             return MultiAgentGymWrapper(FixedFlatWrapper(EnumActionWrapper(env)))
