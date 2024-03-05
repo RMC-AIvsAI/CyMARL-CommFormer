@@ -41,10 +41,10 @@ class Analyse(Action):
                             if file['Density'] >= 0.9:
                                 red_pid = [s for s in state.sessions['Red'].values() if s.hostname == self.hostname][0].pid
                                 if self.hostname not in parent_session.sus_pids:
-                                    self.action_cost = 0.2
+                                    self.action_cost = 0.0
                                 else:
                                     if red_pid not in parent_session.sus_pids[self.hostname]:
-                                        self.action_cost = 0.2
+                                        self.action_cost = 0.0
                                 # When exploit is not detected, and once the host is escalated add the process in suspected pid list
                                 parent_session.add_sus_pids(hostname=self.hostname, pid=int(red_pid))              
             return obs

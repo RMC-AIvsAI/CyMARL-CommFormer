@@ -11,23 +11,15 @@ class GreenAgent(BaseAgent):
                 GreenPortScan,
                 # GreenConnection, 
                 ]
-        self.hostnames = [
-                'User0',
-                'User1',
-                'User2',
-                'User3',
-                'User4',
-                'Enterprise0',
-                'Enterprise1',
-                'Enterprise2',
-                ]
-        self.subnets = [
-                'User',
-                'Enterprise',
-                'Operational_A',
-                ]
+        self.hostnames = None
+        self.subnets = None
+        self.step_count = 0
 
     def get_action(self,observation,action_space):
+        if self.step_count == 0:
+            self.subnets = list(action_space['allowed_subnets'].keys())
+            self.hostnames = [host for host, val in action_space['hostname'].items() if val]
+            self.step_count += 1
         action = self.np_random.choice(self.action_space)
         if action == Sleep:
             return Sleep()
@@ -42,7 +34,9 @@ class GreenAgent(BaseAgent):
         pass
 
     def end_episode(self):
-        pass
+        self.hostnames = None
+        self.subnets = None
+        self.step_count = 0
 
     def set_initial_values(self,action_space,observation):
         pass

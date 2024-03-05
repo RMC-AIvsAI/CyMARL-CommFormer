@@ -34,7 +34,7 @@ class Remove(Action):
                 if obs_success:
                     if any(obs_success):
                         obs.set_success(True)
-                        self.action_cost = 0.1    
+                        self.action_cost = 0.0    
         return obs
 
     @property

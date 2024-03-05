@@ -20,7 +20,7 @@
    "eps_start":1,
    "eps_finish":0.05,
    "eps_anneal_time":2000000,
-   "nepisodes":20001,
+   "nepisodes":10001,
    "step_test":10,
    "step_target":100,
    "device":"cpu"

@@ -15,7 +15,7 @@ class Block(Action):
 
     def execute(self, state) -> Observation:
         self.action_cost = -2.0
-        other_agent_actions = [action for agent, action in state.actions[-1].items() if agent != self.agent and agent != 'Red']
+        other_agent_actions = [action for agent, action in state.actions[-1].items() if agent != self.agent and agent != 'Red' and agent != 'Green']
         if other_agent_actions[0].name == 'Analyse':
             red_sessions = state.hosts[other_agent_actions[0].hostname].sessions['Red']
             if any(red_sessions) and (state.sessions['Red'][red_sessions[0]].username == 'root' or state.sessions['Red'][red_sessions[0]].username == 'SYSTEM'):
