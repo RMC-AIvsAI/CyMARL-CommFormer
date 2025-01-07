@@ -1,7 +1,7 @@
 ## Overview
-This codebase adapts 2 libraries: CyMARL and DIAL to train Multiple Agents in Autonomous Cyber Operations (CybORG). Collectively will be called CyMARL. More information can be found in the respective library folders: [CyMARL](pymarl2/) and [DIAL](pycomm/).
+This codebase adapts 2 libraries: CyMARL and CommFormer to train Multiple Agents in Autonomous Cyber Operations (CybORG). Collectively will be called CyMARL. More information can be found in the respective library folders: [CyMARL](pymarl2/) and [DIAL](pycomm/).
 
-
+This work builds upon the work completed in DIAL.
 
 ## Installation instructions
 Codebase has been tested using Windows 10 and Windows 11. To install, begin with a new Anaconda environment following these steps:
