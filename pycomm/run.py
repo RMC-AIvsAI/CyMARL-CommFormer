@@ -52,6 +52,8 @@ def linear_schedule(opt, delta, timesteps):
 def run_trial(opt, env_args, result_path=None, verbose=False):
 	# Initialize action and comm bit settings
 	opt = init_opt(opt)
+
+	# checks to see if cuda is available, note that the config file must have the device parameter set to 'cuda' for this to work
 	device = torch.device("cuda" if opt.device == 'cuda' and torch.cuda.is_available() else "cpu")
 	arena = Arena(opt, env_args, device)
 	agents = create_agents(opt, device)

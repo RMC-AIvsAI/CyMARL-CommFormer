@@ -16,15 +16,22 @@ class Arena:
 		self.env_args = env_args
 		self.device = device
 
+		# create multiprocessing pipes
 		self.parent_conns, self.worker_conns = zip(*[Pipe() for _ in range(self.opt.bs_run)])
+
+		# create the CyborgEnv function
 		env_fn = env_REGISTRY[self.opt.game.lower()]
+
+		# create an empty list to store worker processes
 		self.ps = []
 
+		# initialize the worker processes
 		for i, worker_conn in enumerate(self.worker_conns):
 			ps = Process(target=env_worker, 
                     args=(worker_conn, CloudpickleWrapper(partial(env_fn, **self.env_args))))
 			self.ps.append(ps)
 	
+		# start the worker processes in daemon mode (runs in background and exits alongside main program)
 		for p in self.ps:
 			p.daemon = True
 			p.start()
