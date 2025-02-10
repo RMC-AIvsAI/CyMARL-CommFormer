@@ -32,10 +32,16 @@ def create_cnet(opt):
 
 def create_agents(opt, device):
 	agents = [None] # 1-index agents
+	
+	# instantiates the neural networks that will train the agents
 	cnet = create_cnet(opt)
 	cnet_target = copy.deepcopy(cnet)
+
+	# creates the agents and assigns the cnet and cnet_target to the agents
 	for i in range(1, opt.game_nagents + 1):
 		agents.append(CNetAgent(opt, device, model=cnet, target=cnet_target, index=i))
+
+		# if the model_know_share option is set to False, each agent will have its own cnet and cnet_target models
 		if not opt.model_know_share:
 			cnet = create_cnet(opt)
 			cnet_target = copy.deepcopy(cnet)
@@ -55,14 +61,20 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 
 	# checks to see if cuda is available, note that the config file must have the device parameter set to 'cuda' for this to work
 	device = torch.device("cuda" if opt.device == 'cuda' and torch.cuda.is_available() else "cpu")
+
+	# create the environment, includes starting multiprocessing workers and pipes and updates options to include the environment information
 	arena = Arena(opt, env_args, device)
+
+	# create the agents and their associated rnn models
 	agents = create_agents(opt, device)
 
+	# if the device is set to cuda, move the agents to the gpu
 	if device == torch.device('cuda'):
 		for agent in agents:
 			if agent is not None:
 				agent.cuda()
 
+	# write the trial options and results to a csv file
 	test_callback = None
 	if result_path:
 		result_out = open(result_path + '/trial.csv', 'w')
@@ -75,34 +87,49 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 		writer.writeheader()
 		test_callback = partial(save_episode_and_reward_to_csv, result_out, writer)
 
-
+	# reset the agents and the buffer
 	for agent in agents[1:]:
 		agent.reset()
 	start_time = time.time()
 	buffer = Episode(opt, device)
 	rewards = []
+	
+	# calculate rate of epsilon decay per episode
 	delta = (opt.eps_start - opt.eps_finish) / opt.eps_anneal_time
 	total_timesteps = 0
+
+	# train the agents
 	for e in range(opt.nepisodes):
+		# calculate epsilon for the episode
 		eps = linear_schedule(opt, delta, total_timesteps)
 		buffer.reset()
-        # run episode
+        
+		# run episode
 		for batch in range(opt.bs//opt.bs_run):
 			episode = arena.run_episode(agents, buffer, eps=eps, train_mode=True)
 			buffer.add_episode(episode)
 		episode_batch = buffer.combine_episodes()
 		total_timesteps += episode_batch.steps.sum().item()
 		norm_r = average_reward(opt, episode_batch, opt.bs, normalized=opt.normalized_reward)
+		
+		# output epoch average steps and reward
 		if verbose:
 			print('train epoch:', e, 'avg steps:', episode_batch.steps.float().mean().item(), 'avg reward:', norm_r)
+		
+		# save epoch, average reward, and average steps to csv file
 		if test_callback:
 			test_callback(e, norm_r, 0, 0)
+
+		# learn from episode
 		if opt.model_know_share:
 			agents[1].learn_from_episode(episode_batch)
 		else:
 			for agent in agents[1:]:
 				agent.learn_from_episode(episode_batch)
 
+		# read from buffer and output turn, red action, agent actions, reward, message sent,
+		# and state for completed episodes. Also outputs the total reward for all steps in the episode.
+		# saves the output to a file every 10 episodes
 		if e % opt.step_test == 0:
 			game = PlayGame(opt, result_path + '/policies/' + str(e) + '.txt')
 			game.open_file()

@@ -1,7 +1,7 @@
 import argparse, datetime, copy, os, json
 from pathlib import Path
 
-from utils.dotdic import DotDic
+from utils.dotdic import DotDic # type: ignore
 from pycomm.run import run_trial
 	
 def construct_env_args(opt, map_name):

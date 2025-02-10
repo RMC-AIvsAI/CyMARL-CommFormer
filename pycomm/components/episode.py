@@ -67,7 +67,9 @@ class Episode:
     def create_step_record(self, batch_size):
         opt = self.opt
         record = DotDic({})
+        # Track state at time t per agent
         record.s_t = None
+        # Track reward at time t per agent
         record.r_t = torch.zeros(batch_size, opt.game_nagents).to(self.device)
         record.terminal = torch.zeros(batch_size).to(self.device)
 

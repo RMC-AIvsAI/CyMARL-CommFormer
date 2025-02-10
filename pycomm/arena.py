@@ -5,10 +5,10 @@ import torch
 from torch.autograd import Variable
 
 from multiprocessing import Pipe, Process
-from envs import REGISTRY as env_REGISTRY
+from envs import REGISTRY as env_REGISTRY # type: ignore
 from functools import partial
 
-from utils.dotdic import DotDic
+from utils.dotdic import DotDic # type: ignore
 
 class Arena:
 	def __init__(self, opt, env_args, device):
@@ -36,9 +36,11 @@ class Arena:
 			p.daemon = True
 			p.start()
 	
+		# get environment info
 		self.parent_conns[0].send(("get_env_info", None))
 		self.env_info = self.parent_conns[0].recv()
-	
+
+		# adds the number of agents, action space, observation space, number of steps and hosts per agent to the options variable
 		self.update_opt()
 		
 	def update_opt(self):
@@ -70,15 +72,24 @@ class Arena:
 	def run_episode(self, agents, buffer, eps, train_mode=False):
 		opt = self.opt
 		step = 0
+		# reset state at time t (s_t)
 		s_t = self.reset()
+
+		# create episode variable holding all the data for the episode
 		episode = buffer.create_episode(opt.bs_run)
 
+		# appends step records for the initial state, 0 across the board
 		episode.step_records.append(buffer.create_step_record(opt.bs_run))
 		episode.step_records[-1].s_t = s_t
 		episode_steps = train_mode and opt.nsteps + 1 or opt.nsteps
+
+		# Loop through the episode
 		while step < episode_steps and episode.ended.sum() < opt.bs_run:
+			
+			# appends step records for the next state
 			episode.step_records.append(buffer.create_step_record(opt.bs_run))
 
+			# Loop through each agent
 			for i in range(1, opt.game_nagents + 1):
 				# Get received messages per agent per batch
 				agent = agents[i]
@@ -109,7 +120,6 @@ class Arena:
 
 				# Batch agent index for input into model
 				batch_agent_index = torch.zeros(opt.bs_run, dtype=torch.long).fill_(agent_idx).to(self.device)
-
 				agent_inputs = {
 					's_t': episode.step_records[step].s_t[:, agent_idx],
 					'messages': comm,
