@@ -5,7 +5,7 @@ import copy
 
 import torch
 from gym.spaces import flatdim
-from envs.multiagentenv import MultiAgentEnv
+from pycomm.envs.multiagentenv import MultiAgentEnv
 
 from CybORG import CybORG
 from CybORG.Shared.Scenarios.FileReaderScenarioGenerator import \
