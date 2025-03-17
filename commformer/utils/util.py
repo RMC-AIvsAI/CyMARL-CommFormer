@@ -35,6 +35,9 @@ def get_shape_from_obs_space(obs_space):
         obs_shape = obs_space
     elif obs_space.__class__.__name__ == 'int':
         obs_shape = [obs_space]
+    # CybORG specific
+    elif obs_space.__class__.__name__ == "MultiBinary":
+        obs_shape = [obs_space.shape[0]]
     else:
         print(obs_space.__class__.__name__)
         raise NotImplementedError

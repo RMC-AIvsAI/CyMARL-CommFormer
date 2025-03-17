@@ -296,6 +296,131 @@ class SubprocVecEnv(ShareVecEnv):
             frame = [remote.recv() for remote in self.remotes]
             return np.stack(frame) 
 
+class CybORG_SubprocVecEnv(ShareVecEnv):
+    # CybORG revision of SubprocVecEnv
+    def __init__(self, env_fns, spaces=None):
+        """
+        envs: list of gym environments to run in subprocesses
+        """
+        self.waiting = False
+        self.closed = False
+        nenvs = len(env_fns)
+        self.remotes, self.work_remotes = zip(*[Pipe() for _ in range(nenvs)])
+        self.ps = [Process(target=cyborg_worker, args=(work_remote, remote, CloudpickleWrapper(env_fn)))
+                   for (work_remote, remote, env_fn) in zip(self.work_remotes, self.remotes, env_fns)]
+        for p in self.ps:
+            p.daemon = True  # if the main process crashes, we should not cause things to hang
+            p.start()
+        for remote in self.work_remotes:
+            remote.close()
+
+        self.remotes[0].send(('get_spaces', None))
+        observation_space, share_observation_space, action_space = self.remotes[0].recv()
+        
+        ShareVecEnv.__init__(self, len(env_fns), observation_space,
+                             share_observation_space, action_space)
+
+    def step_async(self, actions):
+        for remote, action in zip(self.remotes, actions):
+            remote.send(('step', action))
+        self.waiting = True
+
+    def step_wait(self):
+        results = [remote.recv() for remote in self.remotes]
+        self.waiting = False
+        obs, rews, dones, infos = zip(*results)
+        return np.stack(obs), np.stack(rews), np.stack(dones), infos
+
+    def reset(self):
+        for remote in self.remotes:
+            remote.send(('reset', None))
+        # CybORG returns a dictionary containing state at time t
+        s_t = [remote.recv() for remote in self.remotes]
+        return np.stack(s_t)
+
+    def get_obs(self):
+        for remote in self.remotes:
+            remote.send(('get_obs', None))
+        return [remote.recv() for remote in self.remotes]
+
+    def reset_task(self):
+        for remote in self.remotes:
+            remote.send(('reset_task', None))
+        return np.stack([remote.recv() for remote in self.remotes])
+
+    def close(self):
+        if self.closed:
+            return
+        if self.waiting:
+            for remote in self.remotes:
+                remote.recv()
+        for remote in self.remotes:
+            remote.send(('close', None))
+        for p in self.ps:
+            p.join()
+        self.closed = True
+
+    def render(self, mode="rgb_array"):
+        for remote in self.remotes:
+            remote.send(('render', mode))
+        if mode == "rgb_array":   
+            frame = [remote.recv() for remote in self.remotes]
+            return np.stack(frame) 
+
+def cyborg_worker(remote, parent_remote, env_fn_wrapper):
+    parent_remote.close()
+    env = env_fn_wrapper.x()
+    
+    # TBR
+    while True:
+        cmd, data = remote.recv()
+        if cmd == "step":
+            actions = data
+            # Take a step in the environment
+            reward, terminated, info = env.step(actions)
+            # Return the state
+            state = env.get_state()
+            remote.send({
+                # Data for the next timestep needed to pick an action
+                "state": state,
+                # Rest of the data for the current timestep
+                "reward": reward,
+                "terminated": terminated,
+                "info": info
+            })
+        elif cmd == "reset":
+            state = env.reset()
+            remote.send({
+                "state": state
+            })
+        elif cmd == "get_comm":
+            step = data[0]
+            agent_id = data[1]
+            remote.send(env.get_comm_limited(step, agent_id))
+        elif cmd == "get_action_range":
+            comm = data[0]
+            step = data[1]
+            agent_id = data[2]
+            remote.send(env.get_avail_agent_actions(comm, step, agent_id))
+        elif cmd == "close":
+            env.close()
+            remote.close()
+            break
+        elif cmd == "get_env_info":
+            remote.send(env.get_env_info())
+        elif cmd == "get_stats":
+            steps = data
+            god_reward = env.get_stats(steps)
+            remote.send({
+                "god_reward": god_reward
+            })
+        
+        elif cmd == 'get_spaces':
+            remote.send((env.observation_space, env.share_observation_space, env.action_space))
+        elif cmd == 'get_obs':
+            remote.send(env.get_obs())
+        else:
+            raise NotImplementedError
 
 def shareworker(remote, parent_remote, env_fn_wrapper):
     parent_remote.close()

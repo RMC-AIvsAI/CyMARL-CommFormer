@@ -2,6 +2,7 @@ import inspect
 import os
 import sys
 import copy
+import numpy as np
 
 import torch
 from gym.spaces import flatdim
@@ -24,6 +25,13 @@ class CyborgEnv(MultiAgentEnv):
         self.n_agents = len(self._env.agents)
         self._agent_ids = list(self._env.agents)
         self._obs = None
+        
+        # CommFormer specific attributes
+        self.observation_space = list(self._env.observation_spaces.values())
+        self.share_observation_space = list(self._env.share_observation_spaces.values())
+        self.action_space = list(self._env.action_spaces.values())
+
+        # DIAL and other algorithm specific attributes
         self.longest_action_space = max(self._env.action_spaces.values(), key=lambda x: x.n)
         self.longest_observation_space = max(
             self._env.observation_spaces.values(), key=lambda x: x.shape
@@ -127,8 +135,8 @@ class CyborgEnv(MultiAgentEnv):
     def close(self):
         self._env.close()
 
-    def seed(self):
-        return self._env.seed
+    def seed(self, seed):
+        self._env.set_seed(seed)
 
     def get_stats(self, steps):
         #TODO

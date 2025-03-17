@@ -11,26 +11,35 @@ sys.path.append("../../")
 from commformer.config import get_config
 from pycomm.envs.cyborg.cyborg_env import CyborgEnv as CyborgEnv
 
-# PPRunner to be reviewed
-from commformer.runner.shared.pp_runner import PPRunner as Runner
-from commformer.envs.env_wrappers import SubprocVecEnv, DummyVecEnv
+# CybORGRunner to be reviewed
+from commformer.runner.shared.cyborg_runner import CybORGRunner as Runner
+from commformer.envs.env_wrappers import CybORG_SubprocVecEnv as SubprocVecEnv
 
 """Train script for CyMARL-Commformer."""
 
 def make_train_env(all_args):
     def get_env_fn(rank):
         def init_env():
-            if all_args.env_name == "cyborg":
-                env = CyborgEnv(all_args)
+            if all_args.env_name == "CybORG":
+                # Extract relevant arguments from all_args
+                map_name = all_args.scenario_name # cyborg expects map name variable
+                time_limit = all_args.time_limit
+                action_masking = all_args.action_masking
+                wrapper_type = all_args.wrapper_type
+                
+                # Pass the extracted arguments to CyborgEnv
+                env = CyborgEnv(map_name=map_name, time_limit=time_limit, action_masking=action_masking, wrapper_type=wrapper_type)
             else:
                 print("Can not support the " +
-                      all_args.env_name + "environment.")
+                      all_args.env_name + " environment.")
                 raise NotImplementedError
             env.seed(all_args.seed + rank * 1000)
             return env
         return init_env
     if all_args.n_rollout_threads == 1:
-        return DummyVecEnv([get_env_fn(0)])
+        # single environment wrapper NOT YET IMPLEMENTED
+        #return DummyVecEnv([get_env_fn(0)])
+        raise NotImplementedError
     else:
         return SubprocVecEnv([get_env_fn(i) for i in range(all_args.n_rollout_threads)])
 
@@ -38,8 +47,15 @@ def make_train_env(all_args):
 def make_eval_env(all_args):
     def get_env_fn(rank):
         def init_env():
-            if all_args.env_name == "cyborg":
-                env = CyborgEnv(all_args)
+            if all_args.env_name == "CybORG":
+                # Extract relevant arguments from all_args
+                map_name = all_args.scenario_name # cyborg expects map name variable
+                time_limit = all_args.time_limit
+                action_masking = all_args.action_masking
+                wrapper_type = all_args.wrapper_type
+                
+                # Pass the extracted arguments to CyborgEnv
+                env = CyborgEnv(map_name=map_name, time_limit=time_limit, action_masking=action_masking, wrapper_type=wrapper_type)
             else:
                 print("Can not support the " +
                       all_args.env_name + "environment.")
@@ -48,20 +64,28 @@ def make_eval_env(all_args):
             return env
         return init_env
     if all_args.n_eval_rollout_threads == 1:
-        return DummyVecEnv([get_env_fn(0)])
+        # single environment wrapper NOT YET IMPLEMENTED
+        #return DummyVecEnv([get_env_fn(0)])
+        raise NotImplementedError
     else:
         return SubprocVecEnv([get_env_fn(i) for i in range(all_args.n_eval_rollout_threads)])
 
 
 def parse_args(args, parser):
     # environment specific arguments
-    parser.add_argument('--scenario_name', type=str,
-                        default='cyborg', help="Which scenario to run on")
+    parser.add_argument('--scenario_name', type=str, default='confindentiality_small', 
+                        help="Which scenario to run on")
     parser.add_argument('--num_agents', type=int, default=1,
                         help="Number of agents (used in multiagent)")   
     parser.add_argument('--tensor_obs', action="store_true", default=False,
                         help="Do you want a tensor observation")
     parser.add_argument('--eval_episode_length', type=int, default=20)
+    parser.add_argument('--time_limit', type=int, default=100, 
+                        help='CybORG time limit variable')
+    parser.add_argument('--action_masking', type=bool, default=False, 
+                        help='CybORG action masking')
+    parser.add_argument('--wrapper_type', type=str, default='vector', 
+                        help='CybORG wrapper type')
 
     # uses argparse library functions, imported in get_config, to parse the arguments
     all_args = parser.parse_known_args(args)[0]
@@ -70,7 +94,7 @@ def parse_args(args, parser):
 
 
 def main(args):
-    # general hyperparameters for commformer
+    # load general hyperparameters for commformer
     parser = get_config()
     # add environment specific parameters to the parser and parse the command line
     all_args = parse_args(args, parser)
@@ -142,6 +166,7 @@ def main(args):
         "run_dir": run_dir
     }
 
+    # gtg so far
     runner = Runner(config)
     runner.run()
     
