@@ -56,11 +56,12 @@ class CyborgEnv(MultiAgentEnv):
         actions = actions - 1
         actions = actions.tolist()
         action_dict = dict(zip(self._agent_ids, actions))
+        # works with underlying multiagentdialwrapper to get the results
         self._obs, reward, done, info = self._env.step(action_dict)
         self._obs = list(self._obs.values())
         self.step_count += 1
         self.all_obs[self.step_count] = copy.deepcopy(self._obs)
-        return torch.tensor(list(reward.values())), int(all(done.values())), str(info['Red']['action'])
+        return torch.tensor(list(reward.values())), list(done.values()), str(info['Red']['action'])
 
     def get_obs(self):
         # Returns all agent observations in a list

@@ -67,10 +67,14 @@ class CybORGRunner(Runner):
 
             for step in range(self.episode_length):
                 # Sample actions
+                # rnn_states and rnn_states_critic don't output anything, we see this same behaviour in PP
                 values, actions, action_log_probs, rnn_states, rnn_states_critic, actions_env = self.collect(step)
                     
                 # Observe reward and next obs
                 obs, rewards, dones, infos = self.envs.step(actions_env)
+
+                # CybORG specific dimension adjustment
+                rewards = np.expand_dims(rewards, -1)
 
                 data = obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic
 
@@ -78,6 +82,7 @@ class CybORGRunner(Runner):
                 self.insert(data)
 
             # compute return and update network
+            # !!!TBC!!!
             self.compute()
             train_infos = self.train()
             
@@ -119,11 +124,7 @@ class CybORGRunner(Runner):
 
     def warmup(self):
         # reset env
-        # may need to adjust this to use the get_obs() method
-        #obs = self.envs.reset()
-        self.envs.reset()
-        # this is a list, it expects something else
-        obs = self.envs.get_obs()
+        obs = self.envs.reset()
 
         # replay buffer
         if self.use_centralized_V:
@@ -151,7 +152,7 @@ class CybORGRunner(Runner):
         rnn_states = np.array(np.split(_t2n(rnn_states), self.n_rollout_threads))
         rnn_states_critic = np.array(np.split(_t2n(rnn_states_critic), self.n_rollout_threads))
         # rearrange action
-        if self.envs.action_space[0].__class__.__name__ == 'MultiDiscrete':
+        if self.envs.action_space[0].__class__.__name__ == 'MultiDiscrete': # not used by CybORG
             for i in range(self.envs.action_space[0].shape):
                 uc_actions_env = np.eye(self.envs.action_space[0].high[i] + 1)[actions[:, :, i]]
                 if i == 0:
@@ -159,7 +160,8 @@ class CybORGRunner(Runner):
                 else:
                     actions_env = np.concatenate((actions_env, uc_actions_env), axis=2)
         elif self.envs.action_space[0].__class__.__name__ == 'Discrete':
-            actions_env = np.squeeze(np.eye(self.envs.action_space[0].n)[actions], 2)
+            actions_env = actions.reshape(self.n_rollout_threads, self.num_agents) + 1 # add 1 to match the CybORG action space
+
         else:
             raise NotImplementedError
 

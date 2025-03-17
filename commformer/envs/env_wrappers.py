@@ -336,11 +336,19 @@ class CybORG_SubprocVecEnv(ShareVecEnv):
             remote.send(('reset', None))
         # CybORG returns a dictionary containing state at time t
         s_t = [remote.recv() for remote in self.remotes]
-        return np.stack(s_t)
+        # extract the values only from the dictionary, discarding keys
+        values = [list(d.values())[0] for d in s_t]
+        # returns a stacked array of the values
+        return np.stack(values)
 
     def get_obs(self):
         for remote in self.remotes:
             remote.send(('get_obs', None))
+        return [remote.recv() for remote in self.remotes]
+
+    def get_obs_agent(self, agent_id): # not used currently
+        for remote in self.remotes:
+            remote.send(('get_obs_agent', agent_id))
         return [remote.recv() for remote in self.remotes]
 
     def reset_task(self):
@@ -374,20 +382,13 @@ def cyborg_worker(remote, parent_remote, env_fn_wrapper):
     # TBR
     while True:
         cmd, data = remote.recv()
-        if cmd == "step":
-            actions = data
+        if cmd == 'step':
             # Take a step in the environment
-            reward, terminated, info = env.step(actions)
+            reward, done, info = env.step(data)
             # Return the state
-            state = env.get_state()
-            remote.send({
-                # Data for the next timestep needed to pick an action
-                "state": state,
-                # Rest of the data for the current timestep
-                "reward": reward,
-                "terminated": terminated,
-                "info": info
-            })
+            obs = env.get_state()
+            remote.send((obs, reward, done, info))
+
         elif cmd == "reset":
             state = env.reset()
             remote.send({
@@ -419,6 +420,8 @@ def cyborg_worker(remote, parent_remote, env_fn_wrapper):
             remote.send((env.observation_space, env.share_observation_space, env.action_space))
         elif cmd == 'get_obs':
             remote.send(env.get_obs())
+        elif cmd == 'get_obs_agent': # not used currently
+            remote.send(env.get_obs_agent(data))
         else:
             raise NotImplementedError
 
