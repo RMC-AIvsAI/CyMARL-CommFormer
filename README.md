@@ -1,7 +1,7 @@
 ## Overview
 This codebase adapts 2 libraries: CyMARL and CommFormer to train Multiple Agents in Autonomous Cyber Operations (CybORG). Collectively this work will be called CyMARL-CommFormer. 
 
-More information can be found in the respective library folders: [CyMARL](pymarl2/) and ([CommFormer](pycomm/)TBC).
+More information can be found in the respective library folders: [CyMARL](pycomm/) and [CommFormer](commformer/).
 
 This work builds upon the work completed in DIAL.
 
