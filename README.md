@@ -11,7 +11,7 @@ Codebase has been tested using Windows 10 and Windows 11. To install, begin with
 ### Using the GUI
 1. Install Anaconda Navigator
 2. Click on the Environments tab in Anaconda Navigator
-3. Click on the Create button, choose a name for the environment and choose python version 3.9.x (3.8.x for CommFormer-TBC)
+3. Click on the Create button, choose a name for the environment and choose python version 3.8.x. (3.9.x is the expected python version for CyMARL but 3.8.x, the default required version for CommFormer, has been tested and confirmed working)
 4. Click on the Home tab once the environment is created and select the application of your choice to continue installation (anaconda_prompt terminal, Windows terminal, or VS Code terminal - enter the commands seen in the Package Installation via its terminal after ensuring the correct environment is loaded)
 
 ### Using a terminal of your choice
