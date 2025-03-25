@@ -7,7 +7,7 @@ import setproctitle
 import numpy as np
 from pathlib import Path
 import torch
-sys.path.append("../../")
+sys.path.append("../../../")
 from commformer.config import get_config
 from commformer.envs.ic3net_envs.predator_capture_env import PredatorCaptureEnv
 from commformer.envs.ic3net_envs.predator_prey_env import PredatorPreyEnv

@@ -40,7 +40,11 @@ class PPRunner(Runner):
             if self.use_linear_lr_decay:
                 self.trainer.policy.lr_decay(episode, episodes)
 
+            step_times = []  # List to store time taken for each step
+
             for step in range(self.episode_length):
+                step_start_time = time.time()
+                
                 # Sample actions
                 values, actions, action_log_probs, rnn_states, rnn_states_critic, actions_env = self.collect(step)
                     
@@ -51,6 +55,13 @@ class PPRunner(Runner):
 
                 # insert data into buffer
                 self.insert(data)
+
+                step_end_time = time.time()
+                step_times.append(step_end_time - step_start_time)  # Store the time taken for this step
+
+            # Compute the average time per step
+            avg_step_time = sum(step_times) / len(step_times)
+            print(f"Average time taken per step in episode {episode}: {avg_step_time} seconds")
 
             # compute return and update network
             self.compute()

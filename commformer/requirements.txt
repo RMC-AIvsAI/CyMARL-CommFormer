@@ -93,5 +93,6 @@ wandb==0.12.11
 wcwidth==0.2.5
 websocket-client==1.3.2
 whichcraft==0.6.1
+windows-curses==2.4.0
 yarg==0.1.9
 yaspin==2.1.0

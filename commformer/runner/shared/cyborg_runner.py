@@ -67,7 +67,11 @@ class CybORGRunner(Runner):
             if self.use_linear_lr_decay:
                 self.trainer.policy.lr_decay(episode, episodes)
 
+            step_times = []  # List to store time taken for each step
+
             for step in range(self.episode_length):
+                step_start_time = time.time()
+                
                 # Sample actions
                 # rnn_states and rnn_states_critic don't output anything, we see this same behaviour in PP
                 values, actions, action_log_probs, rnn_states, rnn_states_critic, actions_env = self.collect(step)
@@ -83,25 +87,38 @@ class CybORGRunner(Runner):
                 # insert data into buffer
                 self.insert(data)
 
+                step_end_time = time.time()
+                step_times.append(step_end_time - step_start_time)  # Store the time taken for this step
+
+            # Compute the average time per step
+            avg_step_time = sum(step_times) / len(step_times)
+            print(f"Average time taken per step in episode {episode}: {avg_step_time} seconds")
+
             # compute return and update network
-            # !!!TBC!!!
+            compute_start_time = time.time()
             self.compute()
             train_infos = self.train()
+            compute_end_time = time.time()
+            print(f"Time taken for compute and train: {compute_end_time - compute_start_time} seconds")
             
             # post process
             total_num_steps = (episode + 1) * self.episode_length * self.n_rollout_threads
             
             # save model
             if (episode % self.save_interval == 0 or episode == episodes - 1):
+                save_start_time = time.time()
                 self.save(episode)
+                save_end_time = time.time()
+                print(f"Time taken to save model: {save_end_time - save_start_time} seconds")
 
             # log information
             if episode % self.log_interval == 0:
                 end = time.time()
                 time_elapsed_h = int((end - start) // 3600)
                 time_elapsed_m = int((end - start) % 3600 // 60)
-                estimated_time_h = int(end - episode_start_time) * episodes // 3600
-                estimated_time_m = int((((end - episode_start_time) * episodes) % 3600) // 60)
+                estimated_time_seconds = (end - episode_start_time) * (episodes - episode)
+                estimated_time_h = int(estimated_time_seconds // 3600)
+                estimated_time_m = int((estimated_time_seconds % 3600) // 60)
                 time_per_episode = (end - episode_start_time) / (episode + 1) / 60
                 print("\n Scenario {} Algo {} Exp {} updates {}/{} episodes, total num timesteps {}/{}, FPS {}.\n \
                       Start Time: {}.\n \
@@ -123,7 +140,6 @@ class CybORGRunner(Runner):
                                 estimated_time_h,
                                 estimated_time_m,
                                 time_per_episode))
-
 
                 train_infos["average_episode_rewards"] = np.mean(self.buffer.rewards) * self.episode_length
                 print("average episode rewards is {}".format(train_infos["average_episode_rewards"]))
