@@ -10,3 +10,4 @@ pycomm/tester.py
 pymarl2/tester.py
 pycomm/games
 .vscode/
+commformer/scripts/results

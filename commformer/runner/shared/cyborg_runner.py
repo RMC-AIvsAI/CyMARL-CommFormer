@@ -62,6 +62,8 @@ class CybORGRunner(Runner):
         episodes = int(self.num_env_steps) // self.episode_length // self.n_rollout_threads
 
         for episode in range(episodes):
+            episode_start_time = time.time()
+            
             if self.use_linear_lr_decay:
                 self.trainer.policy.lr_decay(episode, episodes)
 
@@ -96,7 +98,15 @@ class CybORGRunner(Runner):
             # log information
             if episode % self.log_interval == 0:
                 end = time.time()
-                print("\n Scenario {} Algo {} Exp {} updates {}/{} episodes, total num timesteps {}/{}, FPS {}.\n"
+                time_elapsed_h = int((end - start) // 3600)
+                time_elapsed_m = int((end - start) % 3600 // 60)
+                estimated_time_h = int(end - episode_start_time) * episodes // 3600
+                estimated_time_m = int((((end - episode_start_time) * episodes) % 3600) // 60)
+                time_per_episode = (end - episode_start_time) / (episode + 1) / 60
+                print("\n Scenario {} Algo {} Exp {} updates {}/{} episodes, total num timesteps {}/{}, FPS {}.\n \
+                      Start Time: {}.\n \
+                      Current Time: {}.\n \
+                      Time Elapsed: {}h{}m. Estimated time to complete: {}h{}m. Time per episode: {}\n"
                         .format(
                                 self.all_args.env_name,
                                 self.algorithm_name,
@@ -105,7 +115,14 @@ class CybORGRunner(Runner):
                                 episodes,
                                 total_num_steps,
                                 self.num_env_steps,
-                                int(total_num_steps / (end - start))))
+                                int(total_num_steps / (end - start)),
+                                time.localtime(start),
+                                time.localtime(end),
+                                time_elapsed_h,
+                                time_elapsed_m,
+                                estimated_time_h,
+                                estimated_time_m,
+                                time_per_episode))
 
 
                 train_infos["average_episode_rewards"] = np.mean(self.buffer.rewards) * self.episode_length
