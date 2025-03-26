@@ -92,24 +92,17 @@ class CybORGRunner(Runner):
 
             # Compute the average time per step
             avg_step_time = sum(step_times) / len(step_times)
-            print(f"Average time taken per step in episode {episode}: {avg_step_time} seconds")
 
             # compute return and update network
-            compute_start_time = time.time()
             self.compute()
             train_infos = self.train()
-            compute_end_time = time.time()
-            print(f"Time taken for compute and train: {compute_end_time - compute_start_time} seconds")
             
             # post process
             total_num_steps = (episode + 1) * self.episode_length * self.n_rollout_threads
             
             # save model
             if (episode % self.save_interval == 0 or episode == episodes - 1):
-                save_start_time = time.time()
                 self.save(episode)
-                save_end_time = time.time()
-                print(f"Time taken to save model: {save_end_time - save_start_time} seconds")
 
             # log information
             if episode % self.log_interval == 0:
@@ -119,11 +112,8 @@ class CybORGRunner(Runner):
                 estimated_time_seconds = (end - episode_start_time) * (episodes - episode)
                 estimated_time_h = int(estimated_time_seconds // 3600)
                 estimated_time_m = int((estimated_time_seconds % 3600) // 60)
-                time_per_episode = (end - episode_start_time) / (episode + 1) / 60
                 print("\n Scenario {} Algo {} Exp {} updates {}/{} episodes, total num timesteps {}/{}, FPS {}.\n \
-                      Start Time: {}.\n \
-                      Current Time: {}.\n \
-                      Time Elapsed: {}h{}m. Estimated time to complete: {}h{}m. Time per episode: {}\n"
+                      Time Elapsed: {}h{}m. Estimated time to complete: {}h{}m. Average step time: {}\n"
                         .format(
                                 self.all_args.env_name,
                                 self.algorithm_name,
@@ -133,13 +123,11 @@ class CybORGRunner(Runner):
                                 total_num_steps,
                                 self.num_env_steps,
                                 int(total_num_steps / (end - start)),
-                                time.localtime(start),
-                                time.localtime(end),
                                 time_elapsed_h,
                                 time_elapsed_m,
                                 estimated_time_h,
                                 estimated_time_m,
-                                time_per_episode))
+                                avg_step_time))
 
                 train_infos["average_episode_rewards"] = np.mean(self.buffer.rewards) * self.episode_length
                 print("average episode rewards is {}".format(train_infos["average_episode_rewards"]))
