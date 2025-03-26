@@ -58,8 +58,11 @@ class MultiAgentDIALWrapper(BaseWrapper):
         return self.env.render(mode)
 
     def close(self):
-        # Insert code from phillip
-        return self.env.close()
+        # adjusted code to call shutdown method found in BaseWrapper
+        # this method uses the environment controller to shutdown the environment
+        # note that it may not actually do anything other than a pass command for
+        # simulations, see method in SimulationController.py
+        return self.env.shutdown()
 
     def _get_obs_size(self):
         return {agent: sum(len(sublist) for sublist in self.env.get_observation(agent)) for agent in self.agents}
