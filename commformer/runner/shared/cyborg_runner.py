@@ -55,13 +55,13 @@ class CybORGRunner(Runner):
         super(CybORGRunner, self).__init__(config)
 
     def run(self):
-        # reset environment and buffer
-        self.warmup()   
-
         start = time.time()
         episodes = int(self.num_env_steps) // self.episode_length // self.n_rollout_threads
 
         for episode in range(episodes):
+            # reset environment and buffer
+            # CybORG requires a full reset each episode
+            self.warmup()
             episode_start_time = time.time()
             
             if self.use_linear_lr_decay:
