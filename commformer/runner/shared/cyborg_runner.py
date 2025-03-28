@@ -2,6 +2,7 @@ import time
 import numbers
 import numpy as np
 import torch
+import os
 from commformer.runner.shared.base_runner import Runner
 
 def _t2n(x):
@@ -139,6 +140,9 @@ class CybORGRunner(Runner):
                 image = torch.from_numpy(edges).unsqueeze(0).unsqueeze(0)
                 self.writter.add_image('Matrix', image, dataformats='NCHW', global_step=total_num_steps)
 
+                # Save actions to file
+                self.save_actions_to_file(os.path.join(self.run_dir, "actions_output_ep_" + str(episode) + ".txt"))
+
             # eval
             if episode % self.eval_interval == 0 and self.use_eval:
                 self.eval(total_num_steps)
@@ -196,13 +200,15 @@ class CybORGRunner(Runner):
         masks = np.ones((self.n_rollout_threads, self.num_agents, 1), dtype=np.float32)
         masks[dones == True] = np.zeros(((dones == True).sum(), 1), dtype=np.float32)
 
+        infos = list(infos)
+
         if self.use_centralized_V:
             share_obs = obs.reshape(self.n_rollout_threads, -1)
             share_obs = np.expand_dims(share_obs, 1).repeat(self.num_agents, axis=1)
         else:
             share_obs = obs
 
-        self.buffer.insert(share_obs, obs, rnn_states, rnn_states_critic, actions, action_log_probs, values, rewards, masks)
+        self.buffer.insert(share_obs, obs, rnn_states, rnn_states_critic, actions, action_log_probs, values, rewards, masks, infos)
 
     @torch.no_grad()
     def eval(self, total_num_steps):
@@ -306,3 +312,47 @@ class CybORGRunner(Runner):
         # print("eval average episode rewards of agent: " + str(eval_average_episode_rewards))
         # print("eval average steps: " + str(eval_average_steps))
         # self.log_env(eval_env_infos, total_num_steps)
+
+    def save_actions_to_file(self, actions_file_path):
+        """
+        Reads the self.buffer.actions, rewards and obs arrays and writes their contents in human readable format to a .txt file in the run_dir directory.
+        """
+        # Define the action dictionary for agents in play
+        # FUTURE WORK: support for additional agents
+        self.action_dict_1 = {index: value for index, value in enumerate(self.envs.get_possible_actions("Blue0")[0])}
+        self.action_dict_2 = {index: value for index, value in enumerate(self.envs.get_possible_actions("Blue1")[0])}
+
+        # Write contents to the file
+        with open(actions_file_path, "w") as file:
+            for step, actions in enumerate(self.buffer.actions):
+                file.write(f"Step {step}:\n")
+
+                for thread_id, action in enumerate(actions):
+                    file.write(f"Thread {thread_id}:\n")
+                    red_action_string = self.buffer.infos[step][thread_id]
+                    file.write(f"Red Agent Action: {red_action_string}\n")
+                    for agent_id, thread_action in enumerate(action):
+                        # Determine which action_dict to use based on the agent_id
+                        if agent_id == 0:
+                            action_string = self.action_dict_1.get(int(thread_action), "Unknown Action")
+                        elif agent_id == 1:
+                            action_string = self.action_dict_2.get(int(thread_action), "Unknown Action")
+                        else:
+                            action_string = "Unknown Agent"
+                        
+                        reward = self.buffer.rewards[step][thread_id][agent_id]
+                        obs = self.buffer.obs[step+1][thread_id][agent_id]
+                        file.write(f"Agent {agent_id}: {action_string}, Reward: {reward}, Obs: {obs}\n")
+
+                    file.write("\n")
+
+                file.write("\n")
+
+            # Sum rewards along the first axis (steps) and third axis (agents) for each thread_id
+            rewards_per_thread = np.sum(self.buffer.rewards, axis=(0,2))  # Sum over steps for all agents
+
+            # Print the total reward per thread at the end of the episode
+            for thread_id, reward_sum in enumerate(rewards_per_thread):
+                file.write(f"Thread {thread_id}: Total Reward = {reward_sum}\n")
+
+        print(f"Actions have been saved to {actions_file_path}")

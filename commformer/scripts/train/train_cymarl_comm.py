@@ -12,8 +12,6 @@ import torch
 sys.path.append("../../../")
 from commformer.config import get_config
 from pycomm.envs.cyborg.cyborg_env import CyborgEnv as CyborgEnv
-
-# CybORGRunner to be reviewed
 from commformer.runner.shared.cyborg_runner import CybORGRunner as Runner
 from commformer.envs.env_wrappers import CybORG_SubprocVecEnv as SubprocVecEnv
 
@@ -24,8 +22,12 @@ def make_train_env(all_args):
         def init_env():
             if all_args.env_name == "CybORG":
                 # Extract relevant arguments from all_args
-                map_name = all_args.scenario_name # cyborg expects map name variable
-                time_limit = all_args.time_limit
+                map_name = all_args.scenario_name # cyborg expects map name variable not scenario name
+                # If CybORG time limit is not specified, use the episode length
+                if all_args.time_limit is None:
+                    time_limit = all_args.episode_length
+                else:
+                    time_limit = all_args.time_limit
                 action_masking = all_args.action_masking
                 wrapper_type = all_args.wrapper_type
                 
@@ -82,8 +84,8 @@ def parse_args(args, parser):
     parser.add_argument('--tensor_obs', action="store_true", default=False,
                         help="Do you want a tensor observation")
     parser.add_argument('--eval_episode_length', type=int, default=20)
-    parser.add_argument('--time_limit', type=int, default=100, 
-                        help='CybORG time limit variable')
+    parser.add_argument('--time_limit', type=int, 
+                        help='Underlying CybORG environment episode limit. In CyMARL, this is the number of steps per episode.')
     parser.add_argument('--action_masking', type=bool, default=False, 
                         help='CybORG action masking')
     parser.add_argument('--wrapper_type', type=str, default='vector', 

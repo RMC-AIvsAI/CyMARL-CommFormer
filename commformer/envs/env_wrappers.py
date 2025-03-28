@@ -351,6 +351,11 @@ class CybORG_SubprocVecEnv(ShareVecEnv):
             remote.send(('get_obs_agent', agent_id))
         return [remote.recv() for remote in self.remotes]
 
+    def get_possible_actions(self, agent_id):
+        for remote in self.remotes:
+            remote.send(('get_possible_actions', agent_id))
+        return [remote.recv() for remote in self.remotes]
+
     def reset_task(self):
         for remote in self.remotes:
             remote.send(('reset_task', None))
@@ -420,6 +425,9 @@ def cyborg_worker(remote, parent_remote, env_fn_wrapper):
             remote.send((env.observation_space, env.share_observation_space, env.action_space))
         elif cmd == 'get_obs':
             remote.send(env.get_obs())
+        elif cmd == "get_possible_actions":
+            agent_id = data
+            remote.send(env.get_possible_actions(agent_id))
         elif cmd == 'get_obs_agent': # not used currently
             remote.send(env.get_obs_agent(data))
         else:
