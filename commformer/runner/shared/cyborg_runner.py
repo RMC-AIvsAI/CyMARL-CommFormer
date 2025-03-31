@@ -324,14 +324,20 @@ class CybORGRunner(Runner):
 
         # Write contents to the file
         with open(actions_file_path, "w") as file:
-            for step, actions in enumerate(self.buffer.actions):
-                file.write(f"Step {step}:\n")
+            # Iterate through threads first
+            for thread_id in range(self.n_rollout_threads):
+                file.write(f"Thread {thread_id}:\n")
 
-                for thread_id, action in enumerate(actions):
-                    file.write(f"Thread {thread_id}:\n")
+                # Iterate through steps for the current thread
+                for step in range(self.episode_length):
+                    file.write(f"  Step {step}:\n")
+
+                    # Get the Red Agent action for the current step and thread
                     red_action_string = self.buffer.infos[step][thread_id]
-                    file.write(f"Red Agent Action: {red_action_string}\n")
-                    for agent_id, thread_action in enumerate(action):
+                    file.write(f"    Red Agent Action: {red_action_string}\n")
+
+                    # Iterate through agents for the current step and thread
+                    for agent_id, thread_action in enumerate(self.buffer.actions[step][thread_id]):
                         # Determine which action_dict to use based on the agent_id
                         if agent_id == 0:
                             action_string = self.action_dict_1.get(int(thread_action), "Unknown Action")
@@ -339,20 +345,22 @@ class CybORGRunner(Runner):
                             action_string = self.action_dict_2.get(int(thread_action), "Unknown Action")
                         else:
                             action_string = "Unknown Agent"
-                        
+
+                        # Get the reward and observation for the current agent
                         reward = self.buffer.rewards[step][thread_id][agent_id]
-                        obs = self.buffer.obs[step+1][thread_id][agent_id]
-                        file.write(f"Agent {agent_id}: {action_string}, Reward: {reward}, Obs: {obs}\n")
+                        obs = self.buffer.obs[step + 1][thread_id][agent_id]
+
+                        # Write the agent's action, reward, and observation to the file
+                        file.write(f"    Agent {agent_id}: {action_string}, Reward: {reward}, Obs: {obs}\n")
 
                     file.write("\n")
 
+                # Sum rewards along the first axis (steps)
+                rewards_per_thread = np.sum(self.buffer.rewards, axis=0) # sum over agents not required as agents receive team rewards
+
+                # Print the total reward per thread at the end of the episode
+                file.write(f"Thread {thread_id}: Total Reward = {rewards_per_thread[thread_id, 0]}\n")
+
                 file.write("\n")
-
-            # Sum rewards along the first axis (steps) and third axis (agents) for each thread_id
-            rewards_per_thread = np.sum(self.buffer.rewards, axis=(0,2))  # Sum over steps for all agents
-
-            # Print the total reward per thread at the end of the episode
-            for thread_id, reward_sum in enumerate(rewards_per_thread):
-                file.write(f"Thread {thread_id}: Total Reward = {reward_sum}\n")
 
         print(f"Actions have been saved to {actions_file_path}")
