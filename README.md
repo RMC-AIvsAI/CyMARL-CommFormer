@@ -6,7 +6,7 @@ More information can be found in the respective library folders: [CyMARL](pycomm
 This work builds upon the work completed in DIAL.
 
 ## Installation instructions
-Codebase has been tested using Windows 10 and Windows 11. To install, begin with a new Anaconda environment following these steps:
+Codebase has been tested using Windows 11. To install, begin with a new Anaconda environment following these steps:
 
 ### Using the GUI
 1. Install Anaconda Navigator
@@ -22,46 +22,23 @@ conda activate cymarl
 
 ### Package Installation
 ```
-# get pytorch
-pip install torch==1.8.2 torchvision==0.9.2 torchaudio===0.8.2 --extra-index-url https://download.pytorch.org/whl/lts/1.8/cu111
-
 # clone the repository
 git clone https://github.com/alexwtp/CyMARL-CommFormer.git
 
-# install CyMARL and DIAL (includes PyMARL, DIAL and CybORG)
-# change directory to the folder containing CyMARL
-cd .\CyMARL-CommFormer\
-pip install -e ./
-# install SMAC dependencies
-pip install git+https://github.com/oxwhirl/smac.git
+# install CyMARL-CommFormer (includes PyMARL, DIAL, CybORG and CommFormer)
+# change directory to the folder containing the cloned CyMARL-CommFormer
+pip install -r requirements.txt
 ```
-To verify the installation of PyMARL, run an experiement:
+To verify the installation of CyMARL-CommFormer, run an experiement using the command line below:
 ```
-python pymarl2\main.py --config=qmix_predator_prey --env-config=stag_hunt with env_args.map_name=stag_hunt t_max=10500  
-```
-To verify the installation of DIAL, run an experiement:
-```
-python pycomm/main.py -c pycomm/config/cyborg_dial.json -m confidentiality_small -r
-```
-To verify the installation and configuration of CybORG, run the debugging script:
-Note: This script no longer functions due to changes made during the implementation of DIAL. No current plans to fix this.
-```
-python runner\basic_marl.py
+python .\commformer\train\train_cymarl_comm.py --env_name "CybORG" --algorithm_name "commformer_dec" --scenario_name "confidentiality_small"` --num_agents 2 --eval_episode_length 10 --n_rollout_threads 4 --seed 4 --episode_length 30 --num_env_steps 1000 --log_interval 10
 ```
 
 ## Experimentation
-To run experiments on QMix algorithm: 
-```
-python pymarl2\main.py --config=qmix --env-config=cyborg with env_args.map_name=confidentiality_small
-```
-Note that experiments will default to 1M timesteps, this can be changed by modifying the `t_max` value.
-```
-# note that this command will run into an error (AttributeError: 'BlueTableDIALWrapper' object has no attribute 'close') when completing the training episode
-python pymarl2\main.py --config=qmix --env-config=cyborg with env_args.map_name=confidentiality_small t_max=25000
-```
-For running sequential experiements, batch scripts are used which pull parameters from files in `\runner\config\`. The output of each experiment is stored in `results\sacred\<map_name>\`. Best practice is to add a `name` value to the python command to avoid mixing up experiments using the same map.
+To run experiments on CyMARL-CommFormer use either pre-built scripts found in commformer\scripts or via command line: 
 
-To run experiments on DIAL algorithm: 
+2 homogeneous CommFormer agents, 2 million steps. Used to establish homogeneous baseline.
 ```
-python pycomm/main.py -c pycomm/config/cyborg_dial.json -m confidentiality_small -r
+python .\train\train_cymarl_comm.py --env_name "CybORG" --algorithm_name "commformer_dec" --scenario_name "confidentiality_small"`
+--num_agents 2 --eval_episode_length 10 --n_rollout_threads 4 --seed 4 --episode_length 30 --num_env_steps 2000000 --log_interval 10
 ```
