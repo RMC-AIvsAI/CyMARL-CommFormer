@@ -15,7 +15,7 @@ from CybORG.Wrappers import MultiAgentDIALWrapper, BlueTableDIALWrapper, EnumAct
 
 class CyborgEnv(MultiAgentEnv):
 
-    def __init__(self, map_name, time_limit=100, action_limiting=False, comm_limiting=False, wrapper_type='table', **kwargs):
+    def __init__(self, map_name, time_limit=100, action_limiting=False, comm_limiting=False, wrapper_type='table', use_CommFormer=False, **kwargs):
         self.action_limiting = action_limiting
         self.comm_limiting = comm_limiting
         self.episode_limit = time_limit
@@ -29,6 +29,7 @@ class CyborgEnv(MultiAgentEnv):
         self.observation_space = list(self._env.observation_spaces.values())
         self.share_observation_space = list(self._env.share_observation_spaces.values())
         self.action_space = list(self._env.action_spaces.values())
+        self.use_CommFormer = use_CommFormer
 
         # DIAL and other algorithm specific attributes
         self.longest_action_space = max(self._env.action_spaces.values(), key=lambda x: x.n)
@@ -59,10 +60,11 @@ class CyborgEnv(MultiAgentEnv):
         self._obs = list(self._obs.values())
         self.step_count += 1
         self.all_obs[self.step_count] = copy.deepcopy(self._obs)
-        # CommFormer specific change. FUTURE WORK: incorporate if statement to differentiate between DIAL run and CommFormer run.
-        return torch.tensor(list(reward.values())), list(done.values()), str(info['Red']['action'])
-        # old version, compatible with DIAL. Reference only.
-        #return torch.tensor(list(reward.values())), int(all(done.values())), str(info['Red']['action'])
+        if self.use_CommFormer:
+            done = list(done.values())
+        else:
+            done = int(all(done.values()))
+        return torch.tensor(list(reward.values())), done, str(info['Red']['action'])
 
     def get_obs(self):
         # Returns all agent observations in a list
@@ -97,10 +99,14 @@ class CyborgEnv(MultiAgentEnv):
     def get_possible_actions(self, agent):
         return self._env.get_possible_actions(agent)
     
-    def get_avail_actions(self):
+    # doesn't appear to be used by CyMARL. Used by CommFormer.
+    def get_avail_actions(self, step):
         avail_actions = []
+        # TODO: comm is not used in this function as vectorized comm not found in CommFormer agent yet
+        comm = None
         for agent_id in range(self.n_agents):
-            avail_agent = self.get_avail_agent_actions(agent_id)
+            # TODO: comm_lim not used
+            avail_agent, comm_lim = self.get_avail_agent_actions(comm, step, agent_id)
             avail_actions.append(avail_agent)
         return avail_actions
 
@@ -137,7 +143,10 @@ class CyborgEnv(MultiAgentEnv):
                 else:
                     valid_actions[i] = 0
 
-        return torch.tensor(valid_actions, dtype=torch.long), comm_lim
+        if self.use_CommFormer:
+            return valid_actions, comm_lim
+        else:
+            return torch.tensor(valid_actions, dtype=torch.long), comm_lim
 
     def get_total_actions(self):
         # Returns the total number of actions an agent could ever take 

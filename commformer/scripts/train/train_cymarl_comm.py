@@ -29,11 +29,11 @@ def make_train_env(all_args):
                     time_limit = all_args.episode_length
                 else:
                     time_limit = all_args.time_limit
-                action_masking = all_args.action_masking
+                action_limiting = all_args.action_limiting
                 wrapper_type = all_args.wrapper_type
                 
                 # Pass the extracted arguments to CyborgEnv
-                env = CyborgEnv(map_name=map_name, time_limit=time_limit, action_masking=action_masking, wrapper_type=wrapper_type)
+                env = CyborgEnv(map_name=map_name, time_limit=time_limit, action_limiting=action_limiting, wrapper_type=wrapper_type, use_CommFormer=True)
             else:
                 print("Can not support the " +
                       all_args.env_name + " environment.")
@@ -59,11 +59,11 @@ def make_eval_env(all_args):
                     time_limit = all_args.episode_length
                 else:
                     time_limit = all_args.time_limit
-                action_masking = all_args.action_masking
+                action_limiting = all_args.action_limiting
                 wrapper_type = all_args.wrapper_type
                 
                 # Pass the extracted arguments to CyborgEnv
-                env = CyborgEnv(map_name=map_name, time_limit=time_limit, action_masking=action_masking, wrapper_type=wrapper_type)
+                env = CyborgEnv(map_name=map_name, time_limit=time_limit, action_limiting=action_limiting, wrapper_type=wrapper_type, use_CommFormer=True)
             else:
                 print("Can not support the " +
                       all_args.env_name + "environment.")
@@ -80,7 +80,7 @@ def make_eval_env(all_args):
 
 def parse_args(args, parser):
     # environment specific arguments
-    parser.add_argument('--scenario_name', type=str, default='confindentiality_small', 
+    parser.add_argument('--scenario_name', type=str, default='confidentiality_small', 
                         help="Which scenario to run on")
     parser.add_argument('--num_agents', type=int, default=1,
                         help="Number of agents (used in multiagent)")   
@@ -89,8 +89,8 @@ def parse_args(args, parser):
     parser.add_argument('--eval_episode_length', type=int, default=20)
     parser.add_argument('--time_limit', type=int, 
                         help='Underlying CybORG environment episode limit. In CyMARL, this is the number of steps per episode.')
-    parser.add_argument('--action_masking', type=bool, default=False, 
-                        help='CybORG action masking')
+    parser.add_argument('--action_limiting', type=bool, default=False, 
+                        help='CybORG action limiting/masking flag')
     parser.add_argument('--wrapper_type', type=str, default='vector', 
                         help='CybORG wrapper type')
 

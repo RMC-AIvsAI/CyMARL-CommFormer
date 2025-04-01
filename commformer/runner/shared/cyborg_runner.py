@@ -79,11 +79,12 @@ class CybORGRunner(Runner):
                     
                 # Observe reward and next obs
                 obs, rewards, dones, infos = self.envs.step(actions_env)
+                available_actions = np.array(self.envs.get_avail_actions(step), dtype=int)
 
                 # CybORG specific dimension adjustment
                 rewards = np.expand_dims(rewards, -1)
 
-                data = obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic
+                data = obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic, available_actions
 
                 # insert data into buffer
                 self.insert(data)
@@ -150,6 +151,7 @@ class CybORGRunner(Runner):
     def warmup(self):
         # reset env
         obs = self.envs.reset()
+        available_actions = np.array(self.envs.get_avail_actions(0), dtype=int)
 
         # replay buffer
         if self.use_centralized_V:
@@ -160,6 +162,7 @@ class CybORGRunner(Runner):
 
         self.buffer.share_obs[0] = share_obs.copy()
         self.buffer.obs[0] = obs.copy()
+        self.buffer.available_actions[0] = available_actions.copy()
 
     @torch.no_grad()
     def collect(self, step):
@@ -169,7 +172,8 @@ class CybORGRunner(Runner):
                             np.concatenate(self.buffer.obs[step]),
                             np.concatenate(self.buffer.rnn_states[step]),
                             np.concatenate(self.buffer.rnn_states_critic[step]),
-                            np.concatenate(self.buffer.masks[step]))
+                            np.concatenate(self.buffer.masks[step]),
+                            np.concatenate(self.buffer.available_actions[step]))
         # [self.envs, agents, dim]
         values = np.array(np.split(_t2n(value), self.n_rollout_threads))
         actions = np.array(np.split(_t2n(action), self.n_rollout_threads))
@@ -193,7 +197,7 @@ class CybORGRunner(Runner):
         return values, actions, action_log_probs, rnn_states, rnn_states_critic, actions_env
 
     def insert(self, data):
-        obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic = data
+        obs, rewards, dones, infos, values, actions, action_log_probs, rnn_states, rnn_states_critic, available_actions = data
 
         rnn_states[dones == True] = np.zeros(((dones == True).sum(), self.recurrent_N, self.hidden_size), dtype=np.float32)
         rnn_states_critic[dones == True] = np.zeros(((dones == True).sum(), *self.buffer.rnn_states_critic.shape[3:]), dtype=np.float32)
@@ -208,7 +212,7 @@ class CybORGRunner(Runner):
         else:
             share_obs = obs
 
-        self.buffer.insert(share_obs, obs, rnn_states, rnn_states_critic, actions, action_log_probs, values, rewards, masks, infos)
+        self.buffer.insert(share_obs, obs, rnn_states, rnn_states_critic, actions, action_log_probs, values, rewards, masks, infos, available_actions=available_actions)
 
     @torch.no_grad()
     def eval(self, total_num_steps):

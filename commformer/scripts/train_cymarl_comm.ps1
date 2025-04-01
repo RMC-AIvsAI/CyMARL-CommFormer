@@ -1,3 +1,3 @@
 # Execute the Python script with the specified arguments
 python .\train\train_cymarl_comm.py --env_name "CybORG" --algorithm_name "commformer_dec" --scenario_name "confidentiality_small"`
---num_agents 2 --eval_episode_length 10 --n_rollout_threads 4 --seed 4 --episode_length 30 --num_env_steps 100000 --log_interval 10
+--num_agents 2 --eval_episode_length 10 --action_limiting "True" --n_rollout_threads 32 --seed 4 --episode_length 30 --num_env_steps 1000000 --log_interval 100

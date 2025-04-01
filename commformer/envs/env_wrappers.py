@@ -341,12 +341,14 @@ class CybORG_SubprocVecEnv(ShareVecEnv):
         # returns a stacked array of the values
         return np.stack(values)
 
+    # not used currently, not tested
     def get_obs(self):
         for remote in self.remotes:
             remote.send(('get_obs', None))
         return [remote.recv() for remote in self.remotes]
 
-    def get_obs_agent(self, agent_id): # not used currently
+    # not used currently, not tested
+    def get_obs_agent(self, agent_id): 
         for remote in self.remotes:
             remote.send(('get_obs_agent', agent_id))
         return [remote.recv() for remote in self.remotes]
@@ -356,6 +358,12 @@ class CybORG_SubprocVecEnv(ShareVecEnv):
             remote.send(('get_possible_actions', agent_id))
         return [remote.recv() for remote in self.remotes]
 
+    def get_avail_actions(self, step):
+        for remote in self.remotes:
+            remote.send(('get_avail_actions', step))
+        return [remote.recv() for remote in self.remotes]
+
+    # not used currently, not tested
     def reset_task(self):
         for remote in self.remotes:
             remote.send(('reset_task', None))
@@ -373,6 +381,7 @@ class CybORG_SubprocVecEnv(ShareVecEnv):
             p.join()
         self.closed = True
 
+    # not used currently, not tested
     def render(self, mode="rgb_array"):
         for remote in self.remotes:
             remote.send(('render', mode))
@@ -421,6 +430,8 @@ def cyborg_worker(remote, parent_remote, env_fn_wrapper):
                 "god_reward": god_reward
             })
         
+        elif cmd == 'get_avail_actions':
+            remote.send(env.get_avail_actions(data))
         elif cmd == 'get_spaces':
             remote.send((env.observation_space, env.share_observation_space, env.action_space))
         elif cmd == 'get_obs':
@@ -878,6 +889,9 @@ class CybORG_DummyVecEnv(ShareVecEnv):
     def close(self):
         for env in self.envs:
             env.close()
+    
+    def get_avail_actions(self, step):
+        return [env.get_avail_actions(step) for env in self.envs]
 
     def get_possible_actions(self, agent_id):
         return [env.get_possible_actions(agent_id) for env in self.envs]

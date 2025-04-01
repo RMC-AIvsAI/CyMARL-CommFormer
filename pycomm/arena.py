@@ -39,7 +39,7 @@ class Arena:
 		# get environment info
 		self.parent_conns[0].send(("get_env_info", None))
 		self.env_info = self.parent_conns[0].recv()
-
+		self.possible_actions = self.env_info["possible_actions"]
 		# adds the number of agents, action space, observation space, number of steps and hosts per agent to the options variable
 		self.update_opt()
 		
@@ -111,6 +111,7 @@ class Arena:
 
 				# Batch agent index for input into model
 				batch_agent_index = torch.zeros(opt.bs_run, dtype=torch.long).fill_(agent_idx).to(self.device)
+
 				agent_inputs = {
 					's_t': episode.step_records[step].s_t[:, agent_idx],
 					'messages': comm,

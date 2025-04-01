@@ -97,6 +97,19 @@ class MultiAgentDIALWrapper(BaseWrapper):
             )
 
     @property
+    def share_observation_spaces(self):
+        '''
+        Returns the shared observation space for every possible agent
+        '''
+        try:
+            return {agent: MultiBinary(self.observation_size[agent] * len(self.agents)) for agent in self.agents}
+        
+        except AttributeError:
+            raise AttributeError(
+                "The base environment does not have an `observation_spaces` dict attribute. Use the environments `observation_space` method instead"
+            )
+
+    @property
     def action_spaces(self):
         '''
         Returns the action space for every possible agent
