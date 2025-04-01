@@ -1,5 +1,5 @@
 from functools import partial
-import json, csv, copy
+import json, csv, copy, os
 import torch
 import time
 
@@ -8,14 +8,6 @@ from pycomm.agent import CNetAgent
 from pycomm.arena import Arena
 from components.episode import Episode, PlayGame
 
-def init_action_and_comm_bits(opt):
-	opt.comm_enabled = opt.game_comm_bits > 0
-	if opt.model_comm_narrow is None:
-		opt.model_comm_narrow = opt.model_dial
-	if not opt.model_comm_narrow and opt.game_comm_bits > 0:
-		opt.game_comm_bits = 2 ** opt.game_comm_bits
-	return opt
-
 def init_opt(opt):
 	if not opt.model_rnn_layers:
 		opt.model_rnn_layers = 2
@@ -23,7 +15,10 @@ def init_opt(opt):
 		opt.model_avg_q = True
 	if opt.eps_decay is None:
 		opt.eps_decay = 1.0
-	opt = init_action_and_comm_bits(opt)
+	if opt.model_comm_narrow is None:
+		opt.model_comm_narrow = opt.model_dial
+	if not opt.comm_enabled:
+		opt.limit_analyse = False
 	return opt
 
 def create_cnet(opt):
@@ -67,6 +62,7 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 
 	# create the agents and their associated rnn models
 	agents = create_agents(opt, device)
+	possible_actions = arena.possible_actions
 
 	# if the device is set to cuda, move the agents to the gpu
 	if device == torch.device('cuda'):
@@ -131,7 +127,7 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 		# and state for completed episodes. Also outputs the total reward for all steps in the episode.
 		# saves the output to a file every 10 episodes
 		if e % opt.step_test == 0:
-			game = PlayGame(opt, result_path + '/policies/' + str(e) + '.txt')
+			game = PlayGame(opt, possible_actions, result_path + '/policies/' + str(e) + '.txt')
 			game.open_file()
 			episode = arena.run_episode(agents, buffer, eps=0, train_mode=False)
 			norm_r = average_reward(opt, episode, opt.bs_run, normalized=opt.normalized_reward)
@@ -144,9 +140,9 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 	
 			if e == opt.nepisodes - 1:
 				end_time = time.time()
-				game = PlayGame(opt, result_path + '/final.txt')
+				game = PlayGame(opt, possible_actions, result_path + '/final.txt')
 				game.open_file()
-				for _ in range(100):
+				for _ in range(1):
 					episode = arena.run_episode(agents, buffer, eps=0, train_mode=False)
 					game.play_game(episode)
 				game.close_file()
@@ -157,6 +153,46 @@ def run_trial(opt, env_args, result_path=None, verbose=False):
 	result_out.write("Total_Time: " + str(total_time) + "\n")
 	if result_path:
 		result_out.close()
+	
+	model_save_path = os.path.join(result_path, 'trained_model.pth')
+	torch.save(agents[1].model.state_dict(), model_save_path)
+	print(f"Model saved to {model_save_path}")
+
+def load_model_and_evaluate(opt, env_args, model_path, eval_path):
+    # Initialize action and comm bit settings
+	opt = init_opt(opt)
+	device = torch.device("cuda" if opt.device == 'cuda' and torch.cuda.is_available() else "cpu")
+	arena = Arena(opt, env_args, device)
+	agents = create_agents(opt, device)
+	possible_actions = arena.possible_actions
+
+	if device == torch.device('cuda'):
+		for agent in agents:
+			if agent is not None:
+				agent.cuda()
+
+	agents[1].model.load_state_dict(torch.load(model_path))
+	agents[1].model.eval()
+
+	buffer = Episode(opt, device)
+	rewards = []
+
+	for e in range(opt.eval_nepisodes):
+		buffer.reset()
+        # run episode
+		game = PlayGame(opt, possible_actions, eval_path + '/' + str(e) + '.txt')
+		game.open_file()
+		episode = arena.run_episode(agents, buffer, eps=0, train_mode=False)
+		norm_r = average_reward(opt, episode, opt.bs_run, normalized=opt.normalized_reward)
+		rewards.append(norm_r)
+		game.play_game(episode)
+		game.close_file()
+
+	if eval_path:
+		with open(os.path.join(eval_path, 'evaluation_results.json'), 'w') as f:
+			json.dump(rewards, f)
+		print(f"Evaluation results saved to {eval_path}")
+
 
 def average_reward(opt, episode, batch_size, normalized=True):
     reward = episode.r.sum()/(batch_size * opt.game_nagents)

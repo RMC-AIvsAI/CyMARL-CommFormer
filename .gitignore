@@ -1,6 +1,7 @@
 *.pyc
 *.egg-info
 *.cpython-39.pyc
+commformer/scripts/results
 results/sacred
 results/models
 results/dial
@@ -10,4 +11,3 @@ pycomm/tester.py
 pymarl2/tester.py
 pycomm/games
 .vscode/
-commformer/scripts/results

@@ -70,7 +70,7 @@ class AgentInterface:
         self.internal_only = internal_only
 
         self.agent_name = agent_name
-        self.action_space = ActionSpace(self.actions, agent_name, allowed_subnets)
+        self.action_space = ActionSpace(self.actions, agent_name, allowed_subnets, list(scenario.subnets.keys()))
         self.agent = agent_obj
         self.agent.set_initial_values(
             action_space=self.action_space.get_action_space(),

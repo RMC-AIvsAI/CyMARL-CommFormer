@@ -20,14 +20,14 @@ MAX_PATHS = 20
 
 class ActionSpace(CybORGLogger):
 
-    def __init__(self, actions, agent, allowed_subnets):
+    def __init__(self, actions, agent, allowed_subnets, subnets):
         # load in the stuff that the agent is allowed to know about
         # save all params
         self.actions = {i: True for i in actions}
         self.action_params = {}
         for action in self.actions:
             self.action_params[action] = signature(action).parameters
-        self.allowed_subnets = {i: True for i in allowed_subnets}
+        self.allowed_subnets = {i: True if i in allowed_subnets else False for i in subnets}
         self.subnet = {}
         self.ip_address = {}
         self.server_session = {}

@@ -16,7 +16,7 @@ class CybORGCNet(nn.Module):
 		super(CybORGCNet, self).__init__()
 
 		self.opt = opt
-		self.comm_size = opt.game_comm_bits
+		self.comm_size = opt.game_nagents - 1 # This is to capture all comms from all other agents. In this version comms is limited to only 1 bit
 		self.init_param_range = (-0.08, 0.08)
 		self.hosts_per_agent = opt.hosts_per_agent
 		self.obs_size = opt.game_obs_space
@@ -33,8 +33,9 @@ class CybORGCNet(nn.Module):
 		for _ in range(self.hosts_per_agent):
 			self.state_mlp.append(nn.Embedding(self.obs_emb_size, opt.model_rnn_size))
 
-		# Add an additional Embedding for n_steps
-		self.state_mlp.append(nn.Embedding(self.block_emb_size, opt.model_rnn_size))
+		# Add an additional Embedding for block bits
+		if self.block_bit > 0:
+			self.state_mlp.append(nn.Embedding(self.block_emb_size, opt.model_rnn_size))
 
 		# Action aware
 		if opt.model_action_aware:

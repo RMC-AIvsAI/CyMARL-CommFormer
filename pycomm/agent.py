@@ -49,7 +49,7 @@ class CNetAgent:
 		#action_range, comm_range = self.game.get_action_range(opt.game_action_space_total, step, self.id)
 		action = torch.zeros(opt.bs_run, dtype=torch.long)
 		action_value = torch.zeros(opt.bs_run)
-		comm_vector = torch.zeros(opt.bs_run, opt.game_comm_bits)
+		comm_vector = torch.zeros(opt.bs_run)
 
 		should_select_random_a = self._eps_flip(eps)
 
@@ -66,7 +66,7 @@ class CNetAgent:
 			action[b] = action[b] + 1
 
 			q_c_range = range(opt.game_action_space, opt.game_action_space_total)
-			if comm_range[b, 1].item() > 0:
+			if opt.comm_enabled and comm_range[b, 1].item() > 0:
 				comm_vector[b] = self.dru.forward(q[b, q_c_range], train_mode=train_mode) # apply DRU
 
 		return (action, action_value), (comm_vector)

@@ -145,6 +145,7 @@ Hosts:
   Defender:
     AWS_Info: []
     image: Velociraptor_Server
+    Ping: False
   Op_Host0:
     AWS_Info: []
     image: Gateway
@@ -195,22 +196,12 @@ Hosts:
     IntegrityValue: Low
     AvailabilityValue: Low
 Subnets:
-  Enterprise:
-    Hosts:
-    - Defender
-    NACLs:
-      all:
-        in: all
-        out: all
-    Size: 1
   Operational:
     Hosts:
     - Op_Host0
     - Op_Server0
+    - Defender
     NACLs:
-      User:
-        in: None
-        out: all
       all:
         in: all
         out: all

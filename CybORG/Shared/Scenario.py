@@ -180,7 +180,8 @@ class ScenarioHost:
                    services=host_info.get("Services"),
                    confidentiality_value=host_info.get("ConfidentialityValue", None),
                    integrity_value=host_info.get("IntegrityValue", None),
-                   availability_value=host_info.get("AvailabilityValue", None))
+                   availability_value=host_info.get("AvailabilityValue", None),
+                   respond_to_ping=host_info.get("Ping", True))
 
     def get_confidentiality_value(self, default):
         return self.confidentiality_value if self.confidentiality_value is not None else default

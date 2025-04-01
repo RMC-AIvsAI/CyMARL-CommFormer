@@ -34,7 +34,7 @@ class EnumActionDIALWrapper(BaseWrapper):
         temp = {}
         params = ['action']
         agent = list(action_space['agent'].keys())[0]
-        if agent == 'Red':
+        if agent == 'Red' or agent == 'Green':
             return None
         for i, action in enumerate(action_space['action']):
             if action not in self.action_signature:
@@ -53,31 +53,24 @@ class EnumActionDIALWrapper(BaseWrapper):
                 else:
                     new_param_list = []
                     for p_dict in param_list:
-                        for key, val in action_space[p].items():
-                            new_key = key
-                            if "Blue" in agent and p == "hostname":
-                                if key == "Defender":
-                                    continue
-                                if key == "User0":
+                        if p == "subnet":
+                            new_p = "allowed_subnets"
+                        else:
+                            new_p = p
+                        for key, val in action_space[new_p].items():
+                            if p == "hostname":
+                                if key == "Defender" or key == "User0":
                                     continue
                                 if not val:
                                     continue
-                            if "Blue" in agent and p == "subnet":
-                                if not val:
+                            if p == "subnet":
+                                if val:
                                     continue
-                                allowed_sub = list(action_space['allowed_subnets'].keys())[0]
-                                new_key = [item for item in self.allowed_subnets if item != allowed_sub][0]
-                            p_dict[p] = new_key
+                            p_dict[p] = key
                             new_param_list.append({key: value for key, value in p_dict.items()})
                     param_list = new_param_list
             for p_dict in param_list:
                 possible_actions.append(action(**p_dict))
-        """
-        if agent != 'Red':
-            possible_actions_sorted = [possible_actions[0]] + sorted(possible_actions[1:], key=lambda x: x.hostname[-1])
-        else:
-            possible_actions_sorted = possible_actions
-        """
         self.possible_actions[agent] = possible_actions
         return len(possible_actions)
     

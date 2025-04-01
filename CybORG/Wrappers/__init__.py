@@ -15,4 +15,3 @@ from .MultiAgentGymWrapper import MultiAgentGymWrapper
 from .DIALWrappers.MultiAgentDIALWrapper import MultiAgentDIALWrapper
 from .DIALWrappers.BlueTableDIALWrapper import BlueTableDIALWrapper
 from .DIALWrappers.EnumActionDIALWrapper import EnumActionDIALWrapper
-from .DIALWrappers.TestWrapper import MultiAgentDIALTestWrapper

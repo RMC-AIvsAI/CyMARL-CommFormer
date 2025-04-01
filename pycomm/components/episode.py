@@ -83,7 +83,7 @@ class Episode:
         if opt.comm_enabled:
             comm_dtype = opt.model_dial and torch.float or torch.long
             comm_dtype = torch.float
-            record.comm = torch.zeros(batch_size, opt.game_nagents, opt.game_comm_bits, dtype=comm_dtype).to(self.device)
+            record.comm = torch.zeros(batch_size, opt.game_nagents, dtype=comm_dtype).to(self.device)
             if opt.model_dial and opt.model_target:
                 record.comm_target = record.comm.clone()
 
@@ -98,11 +98,11 @@ class Episode:
         return record
     
 class PlayGame:
-    def __init__(self, opt, filename):
+    def __init__(self, opt, possible_actions, filename):
         self.opt = opt
         self.filename = filename
         self.file = None
-        self._setup()
+        self.possible_actions = possible_actions
 
     def open_file(self):
         self.file = open(self.filename, 'w')
@@ -110,29 +110,6 @@ class PlayGame:
     def close_file(self):
         if self.file is not None:
             self.file.close()
-
-    def _setup(self):
-        self.action_dict_1 = {}
-        self.action_dict_1[1] = "Monitor"
-        self.action_dict_1[2] = "Remove User1"
-        self.action_dict_1[3] = "Remove User2"
-        self.action_dict_1[4] = "Restore User1"
-        self.action_dict_1[5] = "Restore User2"
-        self.action_dict_1[6] = "Analyse User1"
-        self.action_dict_1[7] = "Analyse User2"
-        self.action_dict_1[8] = "Block Op Subnet"
-        self.action_dict_1[9] = "UnBlock Op Subnet"
-
-        self.action_dict_2 = {}
-        self.action_dict_2[1] = "Monitor"
-        self.action_dict_2[2] = "Remove Op_Host0"
-        self.action_dict_2[3] = "Remove Op_Server0"
-        self.action_dict_2[4] = "Restore Op_Host0"
-        self.action_dict_2[5] = "Restore Op_Server0"
-        self.action_dict_2[6] = "Analyse Op_Host0"
-        self.action_dict_2[7] = "Analyse Op_Server0"
-        self.action_dict_2[8] = "Block User Subnet"
-        self.action_dict_2[9] = "UnBlock User Subnet"
 
     def play_game(self, episode):
         if self.file is not None:
@@ -145,7 +122,8 @@ class PlayGame:
                         self.file.write(f"Red Action: {r_a}\n")
 
                         a = previous_step_record.a_t[i].tolist()
-                        actions = [self.action_dict_1[a[0]], self.action_dict_2[a[1]]]
+                        actions = [self.possible_actions[f'Blue{i}'][action_index-1] for i, action_index in enumerate(a)]
+                        #actions = [self.action_dict_1[a[0]], self.action_dict_2[a[1]]]
                         self.file.write(f"Action: {actions}\n")
 
                         reward = previous_step_record.r_t[i].tolist()
@@ -162,7 +140,7 @@ class PlayGame:
                     previous_step_record = step_record
 
                 self.file.write("\n")
-                total_reward = episode.r[i].sum().item()/2
+                total_reward = episode.r[i].sum().item()/self.opt.game_nagents
                 self.file.write(f"Total Reward: {total_reward}\n")
                 self.file.write("\n")          
                     

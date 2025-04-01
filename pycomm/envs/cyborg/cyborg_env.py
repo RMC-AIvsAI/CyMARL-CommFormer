@@ -2,7 +2,7 @@ import inspect
 import os
 import sys
 import copy
-import numpy as np
+import numpy
 
 import torch
 from gym.spaces import flatdim
@@ -11,15 +11,14 @@ from pycomm.envs.multiagentenv import MultiAgentEnv
 from CybORG import CybORG
 from CybORG.Shared.Scenarios.FileReaderScenarioGenerator import \
     FileReaderScenarioGenerator
-from CybORG.Wrappers import FixedFlatWrapper
-from CybORG.Wrappers import MultiAgentDIALWrapper, BlueTableDIALWrapper, EnumActionDIALWrapper, MultiAgentDIALTestWrapper, PettingZooParallelWrapper
+from CybORG.Wrappers import MultiAgentDIALWrapper, BlueTableDIALWrapper, EnumActionDIALWrapper
 
 class CyborgEnv(MultiAgentEnv):
 
-    def __init__(self, map_name, time_limit=100, action_masking=False, wrapper_type='table', **kwargs):
-        self.opt= None
+    def __init__(self, map_name, time_limit=100, action_limiting=False, comm_limiting=False, wrapper_type='table', **kwargs):
+        self.action_limiting = action_limiting
+        self.comm_limiting = comm_limiting
         self.episode_limit = time_limit
-        self.action_masking = action_masking
         self._env = self._create_env(map_name, time_limit, wrapper_type)
         
         self.n_agents = len(self._env.agents)
@@ -36,7 +35,6 @@ class CyborgEnv(MultiAgentEnv):
         self.longest_observation_space = max(
             self._env.observation_spaces.values(), key=lambda x: x.shape
         )
-        self.longest_turn_vector_obs = flatdim(self.longest_observation_space) + 1
         self.step_count = 0
         self.max_hosts = max(list(len(self.get_agent_hosts(agent)) for agent in self._agent_ids))
         self.all_obs = {}
@@ -61,7 +59,10 @@ class CyborgEnv(MultiAgentEnv):
         self._obs = list(self._obs.values())
         self.step_count += 1
         self.all_obs[self.step_count] = copy.deepcopy(self._obs)
+        # CommFormer specific change. FUTURE WORK: incorporate if statement to differentiate between DIAL run and CommFormer run.
         return torch.tensor(list(reward.values())), list(done.values()), str(info['Red']['action'])
+        # old version, compatible with DIAL. Reference only.
+        #return torch.tensor(list(reward.values())), int(all(done.values())), str(info['Red']['action'])
 
     def get_obs(self):
         # Returns all agent observations in a list
@@ -104,13 +105,26 @@ class CyborgEnv(MultiAgentEnv):
         return avail_actions
 
     def get_avail_agent_actions(self, comm_vector, step, agent_id):
-        # Returns the available actions for agent_id 
+        # Returns the available actions and comm_limited for agent_id 
+        comm_lim = self.get_comm_limited(step, agent_id)
         agent_name = self._agent_ids[agent_id]
         actions = self.get_possible_actions(agent_name)
+        
+        if not self.action_limiting:
+            valid_actions = [1 for _ in range(len(actions))]
+            return torch.tensor(valid_actions, dtype=torch.long), comm_lim
+        
+        analyse_available = True # Even with limiting actions analyse is available
+        if comm_vector is not None: # If comm_vector is provided that means analyse is available only if another agent sends a signal
+            analyse_available = False
+            for i in comm_vector.numpy():
+                if i >= 0.5:
+                    analyse_available = True
+
         valid_actions = copy.deepcopy(actions)
         obs = self.all_obs[step][agent_id]
-        for i in range(len(valid_actions)):
-            if i == 0 or i == len(valid_actions) - 1: # Sleep action and block action is always available
+        for i, action in enumerate(actions):
+            if action.name == 'Sleep' or action.name == 'Block': # Sleep action and block action is always available
                 valid_actions[i] = 1
             else:
                 host_obs = obs[(i - 1) % self.max_hosts]
@@ -118,12 +132,12 @@ class CyborgEnv(MultiAgentEnv):
                     valid_actions[i] = 1
                 elif sum(host_obs) == 1 and host_obs[0] == 0: # If he host has only 1 bit in its obs and the scan bit is 0 then all actions are avaliable
                     valid_actions[i] = 1
-                elif actions[i].name == 'Analyse' and comm_vector is not None and comm_vector >= 0.5:
+                elif action.name == 'Analyse' and analyse_available:
                     valid_actions[i] = 1
                 else:
                     valid_actions[i] = 0
 
-        return torch.tensor(valid_actions, dtype=torch.long)
+        return torch.tensor(valid_actions, dtype=torch.long), comm_lim
 
     def get_total_actions(self):
         # Returns the total number of actions an agent could ever take 
@@ -142,39 +156,20 @@ class CyborgEnv(MultiAgentEnv):
     def get_stats(self, steps):
         #TODO
         return 0
-    
-    def get_action_range(self, step, agent_id):
-
-        action_dtype = torch.long
-        action_range = torch.zeros((2), dtype=action_dtype)
-
-        agent_name = self._agent_ids[agent_id]
-        action_space = flatdim(self._env.action_space(agent_name))
-        
-        obs = self.get_obs_agent(agent_id)
-        flattened_obs = sum(obs, [])
-        #if sum(flattened_obs) == 0 and self.r_t == 0.0:
-            #action_range = torch.tensor([1, action_space-2], dtype=action_dtype)
-        #else:
-        action_range = torch.tensor([1, action_space], dtype=action_dtype)
-        return action_range
 
     def get_comm_limited(self, step, agent_id):
         """
-        For a 2 Agent game we are limiting communications. For base scenario, where Red starts in Subnet 1, 
-        only agent 2 needs to communicate if it has detected anything
+        Limiting communication, to only when an agent sees a 1 in any of its observation space
         """
-        #if agent_id == 1:
-        #    return 0
-        if step == 0:
-            return 0
-        for i, obs in enumerate(self.all_obs[step-1]):
-            if i != agent_id:
-                activity = any(1 in host for host in obs if len(host) == 4)
-                if activity:
-                    comm_lim = 1
-                else:
-                    comm_lim = 0
+        comm_lim = False
+        if self.comm_limiting:
+            for i, obs in enumerate(self.all_obs[step]):
+                if i == agent_id:
+                    activity = any(1 in host for host in obs if len(host) == 4)
+                    if activity:
+                        comm_lim = True
+                    else:
+                        comm_lim = False
         return comm_lim
     
     def get_agent_hosts(self, agent):
@@ -185,13 +180,16 @@ class CyborgEnv(MultiAgentEnv):
                     "n_actions": self.get_total_actions(),
                     "n_agents": self.n_agents,
                     "episode_limit": self.episode_limit,
-                    "hosts_per_agent": self.max_hosts}
+                    "hosts_per_agent": self.max_hosts,
+                    "possible_actions": {agent: self.get_possible_actions(agent) for agent in self._agent_ids}
+        }
         return env_info
     
     def _wrap_env(self, env, wrapper_type):
         try:
             if wrapper_type == 'vector':
                 return MultiAgentDIALWrapper(BlueTableDIALWrapper(EnumActionDIALWrapper(env), output_mode='vector'))
+                #return MultiAgentDIALWrapper(EnumActionDIALWrapper(BlueTableDIALWrapper(env, output_mode='vector')))
             else:
                 raise ValueError(f"Unsupported wrapper type: {wrapper_type}")
         except ValueError as e:

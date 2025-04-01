@@ -15,7 +15,7 @@ class Restore(Action):
         self.hostname = hostname
         self.action_cost = 0
         self.mapping = {
-            'Low': 0.1,
+            'Low': 1.0,
             'Medium': 1.0,
             'High': 10.0
         }

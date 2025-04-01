@@ -51,7 +51,7 @@ class Arena:
 		self.opt.hosts_per_agent = self.env_info["hosts_per_agent"]
 
 		if self.opt.comm_enabled:
-			self.opt.game_action_space_total = self.opt.game_action_space + self.opt.game_comm_bits
+			self.opt.game_action_space_total = self.opt.game_action_space + 1 # only allowing 1 bit of comms in this version
 		else:
 			self.opt.game_action_space_total = self.opt.game_action_space
 
@@ -97,18 +97,9 @@ class Arena:
 				comm = None
 				if opt.comm_enabled:
 					comm = episode.step_records[step].comm.clone()
-					comm_limited = self.get_comm_limited(step, agent_idx)
-					if comm_limited is not None:
-						comm_lim = torch.zeros(opt.bs_run, 1, opt.game_comm_bits)
-						for b in range(opt.bs_run):
-							if comm_limited[b].item() > 0:
-								comm_lim[b] = comm[b][comm_limited[b]]
-						comm = comm_lim
-					else:
-						mask = torch.ones(opt.game_nagents, dtype=torch.bool)
-						mask[agent_idx] = False
-						comm = comm[:, mask]
-						#comm[:, agent_idx].zero_()
+					mask = torch.ones(opt.game_nagents, dtype=torch.bool)
+					mask[agent_idx] = False
+					comm = comm[:, mask]
 
 				# Get prev action per batch
 				prev_action = None
@@ -172,18 +163,9 @@ class Arena:
 
 					if opt.comm_enabled and opt.model_dial:
 						comm_target = episode.step_records[step].comm_target.clone()
-						comm_limited = self.get_comm_limited(step, agent_idx)
-						if comm_limited is not None:
-							comm_lim = torch.zeros(opt.bs_run, 1, opt.game_comm_bits)
-							for b in range(opt.bs_run):
-								if comm_limited[b].item() > 0:
-									comm_lim[b] = comm_target[b][comm_limited[b]]
-							comm_target = comm_lim
-						else:
-							mask = torch.ones(opt.game_nagents, dtype=torch.bool)
-							mask[agent_idx] = False
-							comm_target = comm_target[:, mask]
-							#comm_target[:, agent_idx].zero_()
+						mask = torch.ones(opt.game_nagents, dtype=torch.bool)
+						mask[agent_idx] = False
+						comm_target = comm_target[:, mask]
 
 					# comm_target.retain_grad()
 					agent_target_inputs = copy.copy(agent_inputs)
@@ -240,33 +222,24 @@ class Arena:
 		action_range = torch.zeros((self.opt.bs_run, action_space), dtype=torch.long).to(self.device)
 		comm_range = torch.zeros((self.opt.bs_run, 2), dtype=torch.long).to(self.device)
 		for bs, parent_conn in enumerate(self.parent_conns):
-			action_range_data = [comm[bs].view(-1).detach() if comm is not None else None, step, agent_idx]
+			if self.opt.limit_analyse and comm is not None:
+				c_data = comm[bs].view(-1).detach()
+			else:
+				c_data = None
+			action_range_data = [c_data, step, agent_idx]
 			parent_conn.send(("get_action_range", action_range_data))
 
 		# Get the action range
 		for bs, parent_conn in enumerate(self.parent_conns):
 			data = parent_conn.recv()
 
-			action_range[bs] = data
-			comm_range[bs] = torch.tensor([action_space + 1, a_total], dtype=torch.long)
+			action_range[bs] = data[0]
+			if data[1]:
+				comm_range[bs] = torch.tensor([action_space + 1, a_total], dtype=torch.long)
+			else:
+				comm_range[bs] = torch.tensor([0, 0], dtype=torch.long)
 			
 		return action_range, comm_range
-	
-	def get_comm_limited(self, step, agent_idx):
-		#TODO for limiting communication to only agents who observe compromised hosts
-		# Currently implemented for only 2 agents, where messages are received from one another 
-
-		if self.opt.game_comm_limited:
-			comm_limited = torch.zeros(self.opt.bs_run, dtype=torch.long).to(self.device)
-			comm_data = [step, agent_idx]
-			for parent_conn in self.parent_conns:
-				parent_conn.send(("get_comm", comm_data))
-
-			for bs, parent_conn in enumerate(self.parent_conns):
-				c_l = parent_conn.recv()
-				comm_limited[bs] = c_l
-			return comm_limited
-		return None
 		
 	def get_stats(self, steps):
 		stats = DotDic({})
@@ -306,10 +279,6 @@ def env_worker(remote, env_fn):
 				remote.send({
 					"state": state
 				})
-			elif cmd == "get_comm":
-				step = data[0]
-				agent_id = data[1]
-				remote.send(env.get_comm_limited(step, agent_id))
 			elif cmd == "get_action_range":
 				comm = data[0]
 				step = data[1]

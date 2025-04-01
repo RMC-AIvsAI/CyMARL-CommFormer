@@ -21,7 +21,7 @@ JSON configuration files passed to `main.py` should consist of the following key
 | ------ | ------ | ------- |
 | game | name of the game, e.g. "cyborg" | string |
 | game_comm_limited | true if only some agents can communicate at each step | bool |
-| game_comm_bits | number of bits per message | int |
+| comm_enabled | true if communication is enabled | bool |
 | game_comm_sigma | standard deviation of Gaussian noise applied by DRU | float |
 | game_comm_hard | true if use hard discretization, soft approximation otherwise | bool |
 | nsteps | maximum number of game steps | int |

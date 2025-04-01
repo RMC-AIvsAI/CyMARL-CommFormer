@@ -16,6 +16,7 @@ class BlueTableDIALWrapper(BaseWrapper):
         self.blue_info = {}
         self.agent_hosts = {} # CyMARL
         self.agent_blocks = {} # DIAL
+        self.block_action = False
         # CyMARL - Set class vars
         self.reset() 
 
@@ -40,21 +41,22 @@ class BlueTableDIALWrapper(BaseWrapper):
 
         if not self.agent_hosts.get(agent, None):
             self.agent_hosts[agent] = list(obs.keys())
+            if 'success' in self.agent_hosts[agent]:
+                self.agent_hosts[agent].remove('success')
+            if 'Defender' in self.agent_hosts[agent]:
+                self.agent_hosts[agent].remove('Defender')
+            if 'User0' in self.agent_hosts[agent]:
+                self.agent_hosts[agent].remove('User0')
         # Remove all previous step agent blocks
-        self.agent_blocks[agent] = []
+        agent_actions = self.get_possible_actions(agent)
+        for action in agent_actions:
+            if action.name == 'Block':
+                self.agent_blocks[agent][action.subnet] = False
+                self.block_action = True
         self._process_last_action(agent, success)
         anomaly_obs = self._detect_anomalies(obs) if not baseline else obs
         del obs['success']
-        #info = self._process_anomalies(anomaly_obs)
         self._process_anomalies(anomaly_obs)
-        """
-        if baseline:
-            for host in info:
-                info[host][-2] = 'None'
-                info[host][-1] = 'No'
-                self.blue_info[host][-1] = 'No'
-        self.info = info
-        """
         if self.output_mode == 'table':
             return self._create_blue_table(success)
         elif self.output_mode == 'anomaly':
@@ -70,7 +72,7 @@ class BlueTableDIALWrapper(BaseWrapper):
     def _process_initial_obs(self, obs):
         obs = obs.copy()
         for agent in self.agents:
-            self.agent_blocks[agent] = []
+            self.agent_blocks[agent] = {}
         self.baseline = obs
         del self.baseline['success']
         for hostid in obs:
@@ -100,11 +102,9 @@ class BlueTableDIALWrapper(BaseWrapper):
                 if compromised == 'Unknown':
                     self.blue_info[hostname][-1] = 'No'
             if name == 'Block':
-                if subnet not in self.agent_blocks[agent]:
-                    self.agent_blocks[agent].append(subnet)
+                self.agent_blocks[agent][subnet] = True
             if name == 'UnBlock':
-                if subnet in self.agent_blocks[agent]:
-                    self.agent_blocks[agent].remove(subnet)
+                self.agent_blocks[agent][subnet] = False
             if name == 'Restore' and success == True:
                 self.blue_info[hostname][-1] = 'No'
             if name == 'Remove':
@@ -120,24 +120,7 @@ class BlueTableDIALWrapper(BaseWrapper):
         for host, info in self.blue_info.items():
             if host in self.agent_hosts[agent]:
                 info[-2] = 'None'
-        """
-        action = self.get_last_action(agent=agent)
-        if action is not None:
-            name = action.__class__.__name__
-            hostname = action.get_params()['hostname'] if name in ('Analyse', 'Restore','Remove') else None
 
-            if name == 'Restore':
-                self.blue_info[hostname][-1] = 'No'
-            elif name == 'Remove':
-                #compromised = self.blue_info[hostname][-1]
-                #if compromised != 'No':
-                self.blue_info[hostname][-1] = 'Unknown'
-            
-            elif name == 'Analyse':
-                #Added this for DIAL implementation, previously after analyse action, with no malware state wasn't updating to reflect no exploits
-                #In process_anomalies function added an extra layer to detect user privileges. So if malware is detected, this will get updated
-                self.blue_info[hostname][-1] = 'No'
-            """
     def _detect_anomalies(self,obs):
         if self.baseline is None:
             raise TypeError('BlueTableWrapper was unable to establish baseline. This usually means the environment was not reset before calling the step method.')
@@ -275,12 +258,15 @@ class BlueTableDIALWrapper(BaseWrapper):
             vector.extend(value)
 
             proto_vector.append(vector)
-
-        if not self.agent_blocks[agent]:
-            value = [0]
-        else:
-            value = [1]
-        proto_vector.append(value)
+        if self.block_action:
+            vector = []
+            for subnet, val in self.agent_blocks[agent].items():
+                if val:
+                    value = [1]
+                else:
+                    value = [0]
+                vector.extend(value)
+            proto_vector.append(vector)
         return proto_vector
 
     def get_attr(self,attribute:str):

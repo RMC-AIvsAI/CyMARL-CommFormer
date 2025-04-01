@@ -15,14 +15,10 @@ from CybORG.Shared.CommsRewardCalculator import CommsAvailabilityRewardCalculato
 class MultiAgentDIALWrapper(BaseWrapper):
     def __init__(self, env: BaseWrapper, max_steps: int = 100):
         super().__init__(env)
-
-        self.observation_size = self._get_obs_size()
-
-        self._observation_spaces = {agent: MultiBinary(self.observation_size[agent]) for agent in self.agents}
-
         self._action_spaces = {agent: Discrete(
                 self.env.get_action_space(agent)) for agent in self.agents}
-
+        self.observation_size = self._get_obs_size()
+        self._observation_spaces = {agent: MultiBinary(self.observation_size[agent]) for agent in self.agents}
         self.max_steps = max_steps
         self.dones = {agent: False for agent in self.agents}
         self.rewards = {agent: 0. for agent in self.agents}
@@ -101,19 +97,6 @@ class MultiAgentDIALWrapper(BaseWrapper):
             )
 
     @property
-    def share_observation_spaces(self):
-        '''
-        Returns the shared observation space for every possible agent
-        '''
-        try:
-            return {agent: MultiBinary(self.observation_size[agent] * len(self.agents)) for agent in self.agents}
-        
-        except AttributeError:
-            raise AttributeError(
-                "The base environment does not have an `observation_spaces` dict attribute. Use the environments `observation_space` method instead"
-            )
-
-    @property
     def action_spaces(self):
         '''
         Returns the action space for every possible agent
@@ -176,12 +159,6 @@ class MultiAgentDIALWrapper(BaseWrapper):
     
     def get_agent_hosts(self, agent):
         hosts = self.env.get_agent_hosts(agent)
-        if 'success' in hosts:
-            hosts.remove('success')
-        if 'Defender' in hosts:
-            hosts.remove('Defender')
-        if 'User0' in hosts:
-            hosts.remove('User0')
         return hosts
 
     def get_attr(self, attribute: str):
