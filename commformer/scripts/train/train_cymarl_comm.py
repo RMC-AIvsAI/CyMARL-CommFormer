@@ -14,6 +14,7 @@ from commformer.config import get_config
 from pycomm.envs.cyborg.cyborg_env import CyborgEnv as CyborgEnv
 from commformer.runner.shared.cyborg_runner import CybORGRunner as Runner
 from commformer.envs.env_wrappers import CybORG_SubprocVecEnv as SubprocVecEnv
+from commformer.envs.env_wrappers import CybORG_DummyVecEnv as DummyVecEnv
 
 """Train script for CyMARL-Commformer."""
 
@@ -41,9 +42,8 @@ def make_train_env(all_args):
             return env
         return init_env
     if all_args.n_rollout_threads == 1:
-        # single environment wrapper NOT YET IMPLEMENTED
-        #return DummyVecEnv([get_env_fn(0)])
-        raise NotImplementedError
+        # single environment wrapper - only for debugging
+        return DummyVecEnv([get_env_fn(0)])
     else:
         return SubprocVecEnv([get_env_fn(i) for i in range(all_args.n_rollout_threads)])
 
@@ -53,8 +53,12 @@ def make_eval_env(all_args):
         def init_env():
             if all_args.env_name == "CybORG":
                 # Extract relevant arguments from all_args
-                map_name = all_args.scenario_name # cyborg expects map name variable
-                time_limit = all_args.time_limit
+                map_name = all_args.scenario_name # cyborg expects map name variable not scenario name
+                # If CybORG time limit is not specified, use the episode length
+                if all_args.time_limit is None:
+                    time_limit = all_args.episode_length
+                else:
+                    time_limit = all_args.time_limit
                 action_masking = all_args.action_masking
                 wrapper_type = all_args.wrapper_type
                 
@@ -68,9 +72,8 @@ def make_eval_env(all_args):
             return env
         return init_env
     if all_args.n_eval_rollout_threads == 1:
-        # single environment wrapper NOT YET IMPLEMENTED
-        #return DummyVecEnv([get_env_fn(0)])
-        raise NotImplementedError
+        # single environment wrapper - only for debugging
+        return DummyVecEnv([get_env_fn(0)])
     else:
         return SubprocVecEnv([get_env_fn(i) for i in range(all_args.n_eval_rollout_threads)])
 
@@ -170,7 +173,6 @@ def main(args):
         "run_dir": run_dir
     }
 
-    # gtg so far
     runner = Runner(config)
     runner.run()
     

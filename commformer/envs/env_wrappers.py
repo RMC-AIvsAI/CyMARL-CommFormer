@@ -841,7 +841,55 @@ class DummyVecEnv(ShareVecEnv):
         else:
             raise NotImplementedError
 
+# Cyborg revision of the DummyVecEnv single env
+class CybORG_DummyVecEnv(ShareVecEnv):
+    def __init__(self, env_fns):
+        self.envs = [fn() for fn in env_fns]
+        env = self.envs[0]
+        ShareVecEnv.__init__(self, len(
+            env_fns), env.observation_space, env.share_observation_space, env.action_space)
+        self.actions = None
 
+    def step_async(self, actions):
+        self.actions = actions
+
+    def step_wait(self):
+        results = [env.step(a) for (a, env) in zip(self.actions, self.envs)]
+        obs = [env.get_state() for env in self.envs]
+        rews, dones, infos = zip(*results)
+
+        for (i, done) in enumerate(dones):
+            if 'bool' in done.__class__.__name__:
+                if done:
+                    obs[i] = self.envs[i].reset()
+            else:
+                if np.all(done):
+                    obs[i] = self.envs[i].reset()
+
+        self.actions = None
+        return np.stack(obs), np.stack(rews), np.stack(dones), infos
+
+    def reset(self):
+        # CybORG returns a list with a tensor in this case
+        s_t = [env.reset() for env in self.envs]
+        s_t = np.array(s_t[0])
+        return s_t
+
+    def close(self):
+        for env in self.envs:
+            env.close()
+
+    def get_possible_actions(self, agent_id):
+        return [env.get_possible_actions(agent_id) for env in self.envs]
+
+    def render(self, mode="human"):
+        if mode == "rgb_array":
+            return np.array([env.render(mode=mode) for env in self.envs])
+        elif mode == "human":
+            for env in self.envs:
+                env.render(mode=mode)
+        else:
+            raise NotImplementedError
 
 class ShareDummyVecEnv(ShareVecEnv):
     def __init__(self, env_fns):

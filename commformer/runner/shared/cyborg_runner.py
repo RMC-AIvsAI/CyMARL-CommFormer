@@ -74,7 +74,7 @@ class CybORGRunner(Runner):
                 step_start_time = time.time()
                 
                 # Sample actions
-                # rnn_states and rnn_states_critic don't output anything, we see this same behaviour in PP
+                # rnn_states and rnn_states_critic are only included for compatibility purposes, they will always be zeros
                 values, actions, action_log_probs, rnn_states, rnn_states_critic, actions_env = self.collect(step)
                     
                 # Observe reward and next obs
