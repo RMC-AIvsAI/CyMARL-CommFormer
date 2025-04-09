@@ -381,6 +381,11 @@ class CybORG_SubprocVecEnv(ShareVecEnv):
             p.join()
         self.closed = True
 
+    def get_agent_ids(self):
+        for remote in self.remotes:
+            remote.send(('get_agent_ids', None))
+        return [remote.recv() for remote in self.remotes]
+
     # not used currently, not tested
     def render(self, mode="rgb_array"):
         for remote in self.remotes:
@@ -439,6 +444,8 @@ def cyborg_worker(remote, parent_remote, env_fn_wrapper):
         elif cmd == "get_possible_actions":
             agent_id = data
             remote.send(env.get_possible_actions(agent_id))
+        elif cmd == 'get_agent_ids':
+            remote.send(env.get_agent_ids())
         elif cmd == 'get_obs_agent': # not used currently
             remote.send(env.get_obs_agent(data))
         else:
@@ -869,13 +876,6 @@ class CybORG_DummyVecEnv(ShareVecEnv):
         obs = [env.get_state() for env in self.envs]
         rews, dones, infos = zip(*results)
 
-        for (i, done) in enumerate(dones):
-            if 'bool' in done.__class__.__name__:
-                if done:
-                    obs[i] = self.envs[i].reset()
-            else:
-                if np.all(done):
-                    obs[i] = self.envs[i].reset()
 
         self.actions = None
         return np.stack(obs), np.stack(rews), np.stack(dones), infos
@@ -895,6 +895,9 @@ class CybORG_DummyVecEnv(ShareVecEnv):
 
     def get_possible_actions(self, agent_id):
         return [env.get_possible_actions(agent_id) for env in self.envs]
+    
+    def get_agent_ids(self):
+        return [env.get_agent_ids() for env in self.envs]
 
     def render(self, mode="human"):
         if mode == "rgb_array":

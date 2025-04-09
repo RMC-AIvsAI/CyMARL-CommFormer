@@ -70,6 +70,9 @@ class CybORGRunner(Runner):
 
             step_times = []  # List to store time taken for each step
 
+            # save comms channels matrix for the episode, used by logger function
+            comms_channels = _t2n(self.trainer.policy.transformer.edge_return(exact=True))
+
             for step in range(self.episode_length):
                 step_start_time = time.time()
                 
@@ -142,7 +145,7 @@ class CybORGRunner(Runner):
                 self.writter.add_image('Matrix', image, dataformats='NCHW', global_step=total_num_steps)
 
                 # Save actions to file
-                self.save_actions_to_file(os.path.join(self.run_dir, "actions_output_ep_" + str(episode) + ".txt"))
+                self.save_actions_to_file(os.path.join(self.run_dir, "actions_output_ep_" + str(episode) + ".txt"), comms_channels)
 
             # eval
             if episode % self.eval_interval == 0 and self.use_eval:
@@ -317,17 +320,35 @@ class CybORGRunner(Runner):
         # print("eval average steps: " + str(eval_average_steps))
         # self.log_env(eval_env_infos, total_num_steps)
 
-    def save_actions_to_file(self, actions_file_path):
+    def save_actions_to_file(self, actions_file_path, comms_channels):
         """
-        Reads the self.buffer.actions, rewards and obs arrays and writes their contents in human readable format to a .txt file in the run_dir directory.
+        Reads the self.buffer.actions, rewards and obs arrays and writes their contents in human readable format to a .txt file in the run_dir results directory.
         """
-        # Define the action dictionary for agents in play
-        # FUTURE WORK: support for additional agents
-        self.action_dict_1 = {index: value for index, value in enumerate(self.envs.get_possible_actions("Blue0")[0])}
-        self.action_dict_2 = {index: value for index, value in enumerate(self.envs.get_possible_actions("Blue1")[0])}
+         # Get the agent IDs from the environment
+        agent_ids = self.envs.get_agent_ids()[0]
+                
+        # Iterate through all agent IDs and create action dictionaries dynamically
+        self.action_dicts = {}
+        for numeric_index, agent_id in enumerate(agent_ids):  # Iterate through all agent IDs with numeric indices
+            self.action_dicts[numeric_index] = {index: value for index, value in enumerate(self.envs.get_possible_actions(agent_id)[0])}
 
         # Write contents to the file
         with open(actions_file_path, "w") as file:
+            # Write active communication channels for the episode
+            file.write(f"Active Communication Channels for the Episode:\n")
+            
+            # Define a fixed width for each column
+            column_width = 10
+            
+            # Write column headers (agent IDs) with proper alignment
+            file.write(" " * column_width + "".join(f"{agent_id:<{column_width}}" for agent_id in agent_ids) + "\n")
+            
+            # Write each row with proper alignment
+            for row_label, row in zip(agent_ids, comms_channels):
+                row_string = "".join(f"{int(value):<{column_width}}" for value in row)  # Format each value with fixed width
+                file.write(f"{row_label:<{column_width}}{row_string}\n")  # Align the row label
+            file.write("\n")
+
             # Iterate through threads first
             for thread_id in range(self.n_rollout_threads):
                 file.write(f"Thread {thread_id}:\n")
@@ -336,27 +357,21 @@ class CybORGRunner(Runner):
                 for step in range(self.episode_length):
                     file.write(f"  Step {step}:\n")
 
-                    # Get the Red Agent action for the current step and thread
-                    red_action_string = self.buffer.infos[step][thread_id]
-                    file.write(f"    Red Agent Action: {red_action_string}\n")
-
                     # Iterate through agents for the current step and thread
                     for agent_id, thread_action in enumerate(self.buffer.actions[step][thread_id]):
-                        # Determine which action_dict to use based on the agent_id
-                        if agent_id == 0:
-                            action_string = self.action_dict_1.get(int(thread_action), "Unknown Action")
-                        elif agent_id == 1:
-                            action_string = self.action_dict_2.get(int(thread_action), "Unknown Action")
-                        else:
-                            action_string = "Unknown Agent"
+                        action_string = self.action_dicts[agent_id].get(int(thread_action), "Unknown Action")
 
                         # Get the reward and observation for the current agent
                         reward = self.buffer.rewards[step][thread_id][agent_id]
-                        obs = self.buffer.obs[step + 1][thread_id][agent_id]
+                        obs = self.buffer.obs[step][thread_id][agent_id]
 
                         # Write the agent's action, reward, and observation to the file
                         file.write(f"    Agent {agent_id}: {action_string}, Reward: {reward}, Obs: {obs}\n")
 
+                    # Get the Red Agent action for the current step and thread
+                    # Red actions are taken after blue actions
+                    red_action_string = self.buffer.infos[step][thread_id]
+                    file.write(f"    Red Agent Action: {red_action_string}\n")
                     file.write("\n")
 
                 # Sum rewards along the first axis (steps)

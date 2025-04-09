@@ -163,6 +163,10 @@ class CyborgEnv(MultiAgentEnv):
         # Returns the total number of actions an agent could ever take 
         # TODO: This is only suitable for a discrete 1 dimensional action space for each agent
         return flatdim(self.longest_action_space)
+    
+    def get_agent_ids(self):
+        # Returns the agent ids
+        return self._agent_ids
 
     def render(self):
         self._env.render()
