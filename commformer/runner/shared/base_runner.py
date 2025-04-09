@@ -67,7 +67,12 @@ class Runner(object):
             args_str = '\n'.join([f"{key}: {value}" for key, value in vars(self.all_args).items()])
             self.writter.add_text("args", args_str)
 
-        share_observation_space = self.envs.share_observation_space[0] if self.use_centralized_V else self.envs.observation_space[0]
+        # CybORG specific changes. Should remain compatible with other environments.
+        # find the largest observation space when observation spaces are not identical.
+        largest_observation_space = max(self.envs.observation_space, key=lambda obs_space: obs_space.shape[0])
+        largest_action_space = max(self.envs.action_space, key=lambda act_space: act_space.n if hasattr(act_space, 'n') else act_space.shape[0])
+
+        share_observation_space = max(self.envs.share_observation_space, key=lambda obs_space: obs_space.shape[0]) if self.use_centralized_V else largest_observation_space
 
         print("obs_space: ", self.envs.observation_space)
         print("share_obs_space: ", self.envs.share_observation_space)
@@ -75,9 +80,9 @@ class Runner(object):
 
         # policy network
         self.policy = Policy(self.all_args,
-                             self.envs.observation_space[0],
+                             largest_observation_space,
                              share_observation_space,
-                             self.envs.action_space[0],
+                             largest_action_space,
                              self.num_agents,
                              device=self.device)
 
@@ -90,9 +95,9 @@ class Runner(object):
         # buffer
         self.buffer = SharedReplayBuffer(self.all_args,
                                         self.num_agents,
-                                        self.envs.observation_space[0],
+                                        largest_observation_space,
                                         share_observation_space,
-                                        self.envs.action_space[0],
+                                        largest_action_space,
                                          self.all_args.env_name)
 
     def run(self):

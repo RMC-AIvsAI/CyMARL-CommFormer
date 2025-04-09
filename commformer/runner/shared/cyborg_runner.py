@@ -77,7 +77,7 @@ class CybORGRunner(Runner):
                 # rnn_states and rnn_states_critic are only included for compatibility purposes, they will always be zeros
                 values, actions, action_log_probs, rnn_states, rnn_states_critic, actions_env = self.collect(step)
                     
-                # Observe reward and next obs
+                # Observe reward, next obs and available actions
                 obs, rewards, dones, infos = self.envs.step(actions_env)
                 available_actions = np.array(self.envs.get_avail_actions(step), dtype=int)
 
@@ -98,7 +98,7 @@ class CybORGRunner(Runner):
             # compute return and update network
             self.compute()
             train_infos = self.train()
-            
+
             # post process
             total_num_steps = (episode + 1) * self.episode_length * self.n_rollout_threads
             

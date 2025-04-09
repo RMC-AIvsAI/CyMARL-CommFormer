@@ -2,7 +2,7 @@ import inspect
 import os
 import sys
 import copy
-import numpy
+import numpy as np
 
 import torch
 from gym.spaces import flatdim
@@ -108,7 +108,18 @@ class CyborgEnv(MultiAgentEnv):
             # TODO: comm_lim not used
             avail_agent, comm_lim = self.get_avail_agent_actions(comm, step, agent_id)
             avail_actions.append(avail_agent)
-        return avail_actions
+        
+        # if action space is not the same for all agents then we need to pad the action space to the longest action space
+        # determine the maximum length of the sublists
+        max_length = max(len(sublist) for sublist in avail_actions)
+        
+        # pad each sublist to the maximum length with 0
+        padded_avail_actions = [sublist + [0] * (max_length - len(sublist)) for sublist in avail_actions]
+        
+        # convert to a NumPy array (optional)
+        padded_avail_actions_array = np.array(padded_avail_actions)
+        
+        return padded_avail_actions_array
 
     def get_avail_agent_actions(self, comm_vector, step, agent_id):
         # Returns the available actions and comm_limited for agent_id 
