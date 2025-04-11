@@ -82,8 +82,6 @@ def parse_args(args, parser):
     # environment specific arguments
     parser.add_argument('--scenario_name', type=str, default='confidentiality_small', 
                         help="Which scenario to run on")
-    parser.add_argument('--num_agents', type=int, default=1,
-                        help="Number of agents (used in multiagent)")   
     parser.add_argument('--tensor_obs', action="store_true", default=False,
                         help="Do you want a tensor observation")
     parser.add_argument('--eval_episode_length', type=int, default=20)
@@ -162,7 +160,7 @@ def main(args):
     # env init
     envs = make_train_env(all_args)
     eval_envs = make_eval_env(all_args) if all_args.use_eval else None
-    num_agents = all_args.num_agents
+    num_agents = envs.n_agents
 
     config = {
         "all_args": all_args,

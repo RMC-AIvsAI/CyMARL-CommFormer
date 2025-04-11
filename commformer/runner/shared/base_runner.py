@@ -60,6 +60,15 @@ class Runner(object):
             self.log_dir = str(self.run_dir / 'logs')
             if not os.path.exists(self.log_dir):
                 os.makedirs(self.log_dir)
+            
+            # Additional CybORG specific directories
+            self.train_act_dir = str(self.run_dir / 'train_act')
+            if not os.path.exists(self.train_act_dir):
+                os.makedirs(self.train_act_dir)
+            self.eval_act_dir = str(self.run_dir / 'eval_act')
+            if not os.path.exists(self.eval_act_dir):
+                os.makedirs(self.eval_act_dir)
+            
             self.writter = SummaryWriter(self.log_dir)
             self.save_dir = str(self.run_dir / 'models')
             if not os.path.exists(self.save_dir):
@@ -67,8 +76,8 @@ class Runner(object):
             args_str = '\n'.join([f"{key}: {value}" for key, value in vars(self.all_args).items()])
             self.writter.add_text("args", args_str)
 
-        # CybORG specific changes. Should remain compatible with other environments.
-        # find the largest observation space when observation spaces are not identical.
+        # CybORG specific changes. Should remain compatible with other environments
+        # find the largest observation space when observation spaces are not identical
         largest_observation_space = max(self.envs.observation_space, key=lambda obs_space: obs_space.shape[0])
         largest_action_space = max(self.envs.action_space, key=lambda act_space: act_space.n if hasattr(act_space, 'n') else act_space.shape[0])
 

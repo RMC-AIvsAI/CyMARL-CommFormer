@@ -70,7 +70,7 @@ class CybORGRunner(Runner):
 
             step_times = []  # List to store time taken for each step
 
-            # save comms channels matrix for the episode, used by logger function
+            # save comms channels matrix for the episode, used by save_actions_to_file function
             comms_channels = _t2n(self.trainer.policy.transformer.edge_return(exact=True))
 
             for step in range(self.episode_length):
@@ -145,11 +145,11 @@ class CybORGRunner(Runner):
                 self.writter.add_image('Matrix', image, dataformats='NCHW', global_step=total_num_steps)
 
                 # Save actions to file
-                self.save_actions_to_file(os.path.join(self.run_dir, "actions_output_ep_" + str(episode) + ".txt"), comms_channels)
+                self.save_actions_to_file(os.path.join(self.train_act_dir, "actions_output_ep_" + str(episode) + ".txt"), comms_channels)
 
             # eval
             if episode % self.eval_interval == 0 and self.use_eval:
-                self.eval(total_num_steps)
+                self.eval(total_num_steps, episode)
 
     def warmup(self):
         # reset env
@@ -218,15 +218,27 @@ class CybORGRunner(Runner):
         self.buffer.insert(share_obs, obs, rnn_states, rnn_states_critic, actions, action_log_probs, values, rewards, masks, infos, available_actions=available_actions)
 
     @torch.no_grad()
-    def eval(self, total_num_steps):
+    def eval(self, total_num_steps, last_training_episode):
+        # reset eval env and determine available actions
         eval_episode_rewards = []
         eval_obs = self.eval_envs.reset()
+        eval_available_actions = np.array(self.eval_envs.get_avail_actions(0), dtype=int)
+        
+        # initialize eval buffers, used to output actions to file
+        eval_buffer_obs = np.zeros((self.all_args.eval_episode_length + 1, self.n_eval_rollout_threads, self.num_agents, self.buffer.obs.shape[3]), dtype=np.float32)
+        eval_buffer_obs[0] = eval_obs.copy()
+        eval_buffer_rew = np.zeros((self.all_args.eval_episode_length, self.n_eval_rollout_threads, self.num_agents, 1), dtype=np.float32)
+        eval_buffer_act = np.zeros((self.all_args.eval_episode_length, self.n_eval_rollout_threads, self.num_agents, 1), dtype=np.float32)
+        eval_buffer_infos = np.empty((self.all_args.eval_episode_length, self.n_eval_rollout_threads), dtype=object)
+
+        # share_obs will remain 0 throughout the eval process as the eval env is not used for training
         if self.use_centralized_V:
             eval_share_obs = eval_obs.reshape(self.n_eval_rollout_threads, -1)
             eval_share_obs = np.expand_dims(eval_share_obs, 1).repeat(self.num_agents, axis=1)
         else:
             eval_share_obs = eval_obs
 
+        # rnn states and masks are only included for compatibility purposes, they will always be zeros and ones respectively
         eval_rnn_states = np.zeros((self.n_eval_rollout_threads, *self.buffer.rnn_states.shape[2:]), dtype=np.float32)
         eval_masks = np.ones((self.n_eval_rollout_threads, self.num_agents, 1), dtype=np.float32)
 
@@ -239,6 +251,8 @@ class CybORGRunner(Runner):
         one_episode_steps = [0 for _ in range(self.all_args.eval_episodes)]
         flag = [False for _ in range(self.all_args.eval_episodes)]
 
+        eval_comms_channels = _t2n(self.trainer.policy.transformer.edge_return(exact=True))
+
         for eval_step in range(self.all_args.eval_episode_length):
             self.trainer.prep_rollout()
             eval_action, eval_rnn_states = self.trainer.policy.act(
@@ -246,11 +260,12 @@ class CybORGRunner(Runner):
                           np.concatenate(eval_obs),
                           np.concatenate(eval_rnn_states),
                           np.concatenate(eval_masks),
+                          np.concatenate(eval_available_actions),
                           deterministic=True)
             eval_actions = np.array(np.split(_t2n(eval_action), self.n_eval_rollout_threads))
             eval_rnn_states = np.array(np.split(_t2n(eval_rnn_states), self.n_eval_rollout_threads))
             
-            if self.eval_envs.action_space[0].__class__.__name__ == 'MultiDiscrete':
+            if self.eval_envs.action_space[0].__class__.__name__ == 'MultiDiscrete': # not used by CybORG
                 for i in range(self.eval_envs.action_space[0].shape):
                     eval_uc_actions_env = np.eye(self.eval_envs.action_space[0].high[i]+1)[eval_actions[:, :, i]]
                     if i == 0:
@@ -258,12 +273,15 @@ class CybORGRunner(Runner):
                     else:
                         eval_actions_env = np.concatenate((eval_actions_env, eval_uc_actions_env), axis=2)
             elif self.eval_envs.action_space[0].__class__.__name__ == 'Discrete':
-                eval_actions_env = np.squeeze(np.eye(self.eval_envs.action_space[0].n)[eval_actions], 2)
+                eval_actions_env = eval_actions.reshape(self.n_eval_rollout_threads, self.num_agents) + 1 # add 1 to match the CybORG action space
             else:
                 raise NotImplementedError
 
             # Obser reward and next obs
             eval_obs, eval_rewards, eval_dones, eval_infos = self.eval_envs.step(eval_actions_env)
+
+            # CybORG specific dimension adjustment
+            eval_rewards_CybORG = np.expand_dims(eval_rewards, -1)
 
             eval_rewards = np.mean(eval_rewards, axis=1).flatten()
             one_episode_rewards += eval_rewards
@@ -285,6 +303,11 @@ class CybORGRunner(Runner):
 
                     flag[eval_i] = True
             
+            eval_buffer_obs[eval_step + 1] = eval_obs.copy()
+            eval_buffer_rew[eval_step] = eval_rewards_CybORG.copy()
+            eval_buffer_act[eval_step] = eval_actions.copy()
+            eval_buffer_infos[eval_step] = eval_infos
+
             if eval_episode >= self.all_args.eval_episodes:
                 break
 
@@ -308,21 +331,14 @@ class CybORGRunner(Runner):
 
         print("eval average episode rewards: {}, steps: {}"
                 .format(np.mean(eval_episode_rewards), np.mean(eval_episode_steps)))
-
-
-        # eval_episode_rewards = np.array(eval_episode_rewards)
-        # eval_env_infos = {}
-        # eval_env_infos['eval_average_episode_rewards'] = np.sum(np.array(eval_episode_rewards), axis=0)
-        # eval_env_infos['eval_average_steps'] = np.array(eval_steps)
-        # eval_average_episode_rewards = np.mean(eval_env_infos['eval_average_episode_rewards'])
-        # eval_average_steps = np.mean(eval_env_infos['eval_average_steps'])
-        # print("eval average episode rewards of agent: " + str(eval_average_episode_rewards))
-        # print("eval average steps: " + str(eval_average_steps))
-        # self.log_env(eval_env_infos, total_num_steps)
+        
+        # Save actions to file
+        self.save_eval_actions_to_file(os.path.join(self.eval_act_dir, "actions_output_eval_ep_" + str(last_training_episode) + ".txt"), eval_comms_channels, eval_buffer_obs, eval_buffer_rew, eval_buffer_act, eval_buffer_infos)
 
     def save_actions_to_file(self, actions_file_path, comms_channels):
         """
-        Reads the self.buffer.actions, rewards and obs arrays and writes their contents in human readable format to a .txt file in the run_dir results directory.
+        Reads the self.buffer.actions, rewards, obs and infos arrays and writes their contents in human readable format to a .txt file in the run_dir results directory.
+        Active comms channels for the episode are also written to the file.
         """
          # Get the agent IDs from the environment
         agent_ids = self.envs.get_agent_ids()[0]
@@ -382,4 +398,65 @@ class CybORGRunner(Runner):
 
                 file.write("\n")
 
-        print(f"Actions have been saved to {actions_file_path}")
+        print(f"Training actions have been saved to {actions_file_path}")
+
+    def save_eval_actions_to_file(self, actions_file_path, comms_channels, eval_buffer_obs, eval_buffer_rew, eval_buffer_act, eval_buffer_infos):
+         # Get the agent IDs from the environment
+        agent_ids = self.eval_envs.get_agent_ids()[0]
+                
+        # Iterate through all agent IDs and create action dictionaries dynamically
+        self.action_dicts = {}
+        for numeric_index, agent_id in enumerate(agent_ids):  # Iterate through all agent IDs with numeric indices
+            self.action_dicts[numeric_index] = {index: value for index, value in enumerate(self.eval_envs.get_possible_actions(agent_id)[0])}
+
+        # Write contents to the file
+        with open(actions_file_path, "w") as file:
+            # Write active communication channels for the episode
+            file.write(f"Active Communication Channels for the Episode:\n")
+            
+            # Define a fixed width for each column
+            column_width = 10
+            
+            # Write column headers (agent IDs) with proper alignment
+            file.write(" " * column_width + "".join(f"{agent_id:<{column_width}}" for agent_id in agent_ids) + "\n")
+            
+            # Write each row with proper alignment
+            for row_label, row in zip(agent_ids, comms_channels):
+                row_string = "".join(f"{int(value):<{column_width}}" for value in row)  # Format each value with fixed width
+                file.write(f"{row_label:<{column_width}}{row_string}\n")  # Align the row label
+            file.write("\n")
+
+            # Iterate through threads first
+            for thread_id in range(self.n_eval_rollout_threads):
+                file.write(f"Thread {thread_id}:\n")
+
+                # Iterate through steps for the current thread
+                for step in range(self.all_args.eval_episode_length):
+                    file.write(f"  Step {step}:\n")
+
+                    # Iterate through agents for the current step and thread
+                    for agent_id, thread_action in enumerate(eval_buffer_act[step][thread_id]):
+                        action_string = self.action_dicts[agent_id].get(int(thread_action), "Unknown Action")
+
+                        # Get the reward and observation for the current agent
+                        reward = eval_buffer_rew[step][thread_id][agent_id]
+                        obs = eval_buffer_obs[step][thread_id][agent_id]
+
+                        # Write the agent's action, reward, and observation to the file
+                        file.write(f"    Agent {agent_id}: {action_string}, Reward: {reward}, Obs: {obs}\n")
+
+                    # Get the Red Agent action for the current step and thread
+                    # Red actions are taken after blue actions
+                    red_action_string = eval_buffer_infos[step][thread_id]
+                    file.write(f"    Red Agent Action: {red_action_string}\n")
+                    file.write("\n")
+
+                # Sum rewards along the first axis (steps)
+                rewards_per_thread = np.sum(eval_buffer_rew, axis=0) # sum over agents not required as agents receive team rewards
+
+                # Print the total reward per thread at the end of the episode
+                file.write(f"Thread {thread_id}: Total Reward = {rewards_per_thread[thread_id, 0]}\n")
+
+                file.write("\n")
+
+        print(f"Evaluation actions have been saved to {actions_file_path}")

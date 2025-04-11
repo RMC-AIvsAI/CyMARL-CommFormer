@@ -38,11 +38,12 @@ class ShareVecEnv(ABC):
         'render.modes': ['human', 'rgb_array']
     }
 
-    def __init__(self, num_envs, observation_space, share_observation_space, action_space):
+    def __init__(self, num_envs, observation_space, share_observation_space, action_space, n_agents=None):
         self.num_envs = num_envs
         self.observation_space = observation_space
         self.share_observation_space = share_observation_space
         self.action_space = action_space
+        self.n_agents = n_agents
 
     @abstractmethod
     def reset(self):
@@ -315,10 +316,10 @@ class CybORG_SubprocVecEnv(ShareVecEnv):
             remote.close()
 
         self.remotes[0].send(('get_spaces', None))
-        observation_space, share_observation_space, action_space = self.remotes[0].recv()
+        observation_space, share_observation_space, action_space, n_agents = self.remotes[0].recv()
         
         ShareVecEnv.__init__(self, len(env_fns), observation_space,
-                             share_observation_space, action_space)
+                             share_observation_space, action_space, n_agents)
 
     def step_async(self, actions):
         for remote, action in zip(self.remotes, actions):
@@ -398,7 +399,6 @@ def cyborg_worker(remote, parent_remote, env_fn_wrapper):
     parent_remote.close()
     env = env_fn_wrapper.x()
     
-    # TBR
     while True:
         cmd, data = remote.recv()
         if cmd == 'step':
@@ -434,11 +434,10 @@ def cyborg_worker(remote, parent_remote, env_fn_wrapper):
             remote.send({
                 "god_reward": god_reward
             })
-        
         elif cmd == 'get_avail_actions':
             remote.send(env.get_avail_actions(data))
         elif cmd == 'get_spaces':
-            remote.send((env.observation_space, env.share_observation_space, env.action_space))
+            remote.send((env.observation_space, env.share_observation_space, env.action_space, env.n_agents))
         elif cmd == 'get_obs':
             remote.send(env.get_obs())
         elif cmd == "get_possible_actions":
@@ -865,7 +864,7 @@ class CybORG_DummyVecEnv(ShareVecEnv):
         self.envs = [fn() for fn in env_fns]
         env = self.envs[0]
         ShareVecEnv.__init__(self, len(
-            env_fns), env.observation_space, env.share_observation_space, env.action_space)
+            env_fns), env.observation_space, env.share_observation_space, env.action_space, env.n_agents)
         self.actions = None
 
     def step_async(self, actions):

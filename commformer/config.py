@@ -170,7 +170,7 @@ def get_config():
     parser.add_argument("--n_rollout_threads", type=int, default=32,
                         help="Number of parallel envs for training rollouts")
     parser.add_argument("--n_eval_rollout_threads", type=int, default=1,
-                        help="Number of parallel envs for evaluating rollouts")
+                        help="Number of parallel envs for evaluating rollouts, each parallel env counts as one episode. value must be equal to eval_episodes with current implementation of eval function.")
     parser.add_argument("--n_render_rollout_threads", type=int, default=1,
                         help="Number of parallel envs for rendering rollouts")
     parser.add_argument("--num_env_steps", type=int, default=10e6,
@@ -275,7 +275,7 @@ def get_config():
     # eval parameters
     parser.add_argument("--use_eval", action='store_true', default=False, help="by default, do not start evaluation. If set`, start evaluation alongside with training.")
     parser.add_argument("--eval_interval", type=int, default=25, help="time duration between contiunous twice evaluation progress.")
-    parser.add_argument("--eval_episodes", type=int, default=32, help="number of episodes of a single evaluation.")
+    parser.add_argument("--eval_episodes", type=int, default=1, help="number of episodes of a single evaluation. value must be equal to n_eval_rollout_threads with current eval function implementation.")
 
     # render parameters
     parser.add_argument("--save_gifs", action='store_true', default=False, help="by default, do not save render video. If set, save video.")
