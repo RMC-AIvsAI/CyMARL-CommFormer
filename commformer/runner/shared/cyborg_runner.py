@@ -277,8 +277,9 @@ class CybORGRunner(Runner):
             else:
                 raise NotImplementedError
 
-            # Obser reward and next obs
+            # Observe reward, next obs and available actions
             eval_obs, eval_rewards, eval_dones, eval_infos = self.eval_envs.step(eval_actions_env)
+            eval_available_actions = np.array(self.eval_envs.get_avail_actions(eval_step), dtype=int)
 
             # CybORG specific dimension adjustment
             eval_rewards_CybORG = np.expand_dims(eval_rewards, -1)

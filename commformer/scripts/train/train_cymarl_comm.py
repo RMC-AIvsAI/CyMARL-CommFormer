@@ -7,9 +7,9 @@ import setproctitle # type: ignore
 import numpy as np
 from pathlib import Path
 import torch
-# sys path may need to be appended based on the system
-# an error stating commformer imports not found will appear when trying to run
-sys.path.append("../../../")
+# Dynamically determine the path
+current_dir = Path(__file__).resolve().parent
+sys.path.append(str(current_dir.parent.parent.parent))
 from commformer.config import get_config
 from pycomm.envs.cyborg.cyborg_env import CyborgEnv as CyborgEnv
 from commformer.runner.shared.cyborg_runner import CybORGRunner as Runner
