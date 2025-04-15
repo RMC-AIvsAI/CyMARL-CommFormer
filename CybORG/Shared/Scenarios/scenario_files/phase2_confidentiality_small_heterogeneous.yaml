@@ -25,6 +25,8 @@ Agents:
     adversary: Red
     actions:
       - Sleep
+      - Remove
+      - Restore
       - Analyse
     agent_type: SleepAgent
     reward_calculator_type: BlueConfidentiality
@@ -83,7 +85,6 @@ Agents:
       - Remove
       - Restore
       - Analyse
-      - Block
     agent_type: SleepAgent
     reward_calculator_type: BlueConfidentiality
     starting_sessions:
@@ -99,6 +100,47 @@ Agents:
         username: ubuntu
       - hostname: Op_Server0
         name: VeloOp_Server0
+        parent: VeloServer
+        type: VelociraptorClient
+        username: ubuntu
+      - artifacts:
+          - NetworkConnections
+          - ProcessCreation
+        hostname: Defender
+        name: VeloServer
+        num_children_sessions: 2
+        type: VelociraptorServer
+        username: ubuntu
+    wrappers: [ ]
+  Blue2:
+    Team: Blue
+    internal_only: False
+    AllowedSubnets:
+      - Operational
+    INT:
+      Hosts:
+        Defender:  
+          Interfaces: All
+          System info: All
+          User info: All
+        Op_Host0:
+          Interfaces: All
+          System info: All
+          User info: All
+    adversary: Red
+    actions:
+      - Sleep
+      - Block
+    agent_type: SleepAgent
+    reward_calculator_type: BlueConfidentiality
+    starting_sessions:
+      - hostname: Defender
+        name: VeloDefender
+        parent: VeloServer
+        type: VelociraptorClient
+        username: ubuntu
+      - hostname: Op_Host0
+        name: VeloOp_Host0
         parent: VeloServer
         type: VelociraptorClient
         username: ubuntu

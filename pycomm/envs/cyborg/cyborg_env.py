@@ -144,7 +144,7 @@ class CyborgEnv(MultiAgentEnv):
             if action.name == 'Sleep' or action.name == 'Block': # Sleep action and block action is always available
                 valid_actions[i] = 1
             else:
-                host_obs = obs[(i - 1) % self.max_hosts]
+                host_obs = obs[(i - 1) % (len(obs) - 1)]
                 if sum(host_obs) > 1: # If he host has more than 1 bit then all actions are avaliable
                     valid_actions[i] = 1
                 elif sum(host_obs) == 1 and host_obs[0] == 0: # If he host has only 1 bit in its obs and the scan bit is 0 then all actions are avaliable
