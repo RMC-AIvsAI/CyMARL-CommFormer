@@ -1,311 +1,311 @@
 Active Communication Channels for the Episode:
           Blue0     Blue1     
-Blue0     1         0         
-Blue1     1         0         
+Blue0     0         1         
+Blue1     0         1         
 
 Thread 0:
   Step 0:
-    Agent 0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverRemoteSystems 10.0.219.208/28
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverRemoteSystems 10.0.25.32/28
 
   Step 1:
-    Agent 0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverNetworkServices 10.0.219.220
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.25.40
 
   Step 2:
-    Agent 0: Sleep, Reward: [0.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverNetworkServices 10.0.219.212
-
-  Step 3:
     Agent 0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 1. 0. 0. 0. 0. 0.]
     Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: ExploitRemoteService 10.0.219.220 0
+    Red Agent Action: DiscoverNetworkServices 10.0.25.34
+
+  Step 3:
+    Agent 0: Sleep, Reward: [0.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.25.34 0
 
   Step 4:
     Agent 0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 0. 0. 0.]
     Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: ExploitRemoteService 10.0.219.212 0
+    Red Agent Action: ExploitRemoteService 10.0.25.40 0
 
   Step 5:
-    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
-
-  Step 6:
-    Agent 0: Analyse User2, Reward: [-0.6], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 0: Remove User1, Reward: [0.], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
     Red Agent Action: PrivilegeEscalate User1
 
+  Step 6:
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.25.34 0
+
   Step 7:
-    Agent 0: Analyse User2, Reward: [-0.6], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
+    Agent 0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.25.40 0
 
   Step 8:
-    Agent 0: Analyse User2, Reward: [-0.7], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.7], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: PrivilegeEscalate User2
+    Agent 0: Remove User1, Reward: [0.], Obs: [0. 0. 0. 1. 1. 1. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1
 
   Step 9:
-    Agent 0: Analyse User2, Reward: [-0.2], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.2], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverRemoteSystems 10.0.1.128/28
+    Agent 0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.25.34 0
 
   Step 10:
-    Agent 0: Sleep, Reward: [-0.2], Obs: [0. 0. 0. 1. 0. 0. 1. 1. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.2], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverNetworkServices 10.0.1.129
+    Agent 0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: Sleep
 
   Step 11:
-    Agent 0: Restore User2, Reward: [-3.1], Obs: [0. 0. 0. 1. 0. 0. 1. 1. 0. 0.]
-    Agent 1: Block User, Reward: [-3.1], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverNetworkServices 10.0.1.132
+    Agent 0: Remove User1, Reward: [-0.1], Obs: [0. 0. 0. 1. 0. 0. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User2
 
   Step 12:
-    Agent 0: Remove User2, Reward: [-0.6], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 1.]
-    Red Agent Action: ExploitRemoteService 10.0.219.212 0
+    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverRemoteSystems 10.0.239.224/28
 
   Step 13:
-    Agent 0: Analyse User2, Reward: [-0.6], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
+    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.239.227
 
   Step 14:
-    Agent 0: Analyse User2, Reward: [-0.6], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
+    Agent 0: Restore User2, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-1.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.239.230
 
   Step 15:
-    Agent 0: Analyse User2, Reward: [-0.6], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1
 
   Step 16:
-    Agent 0: Analyse User2, Reward: [-0.7], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.7], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: PrivilegeEscalate User2
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.25.40 0
 
   Step 17:
-    Agent 0: Analyse User2, Reward: [-0.2], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.2], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverNetworkServices 10.0.1.129
+    Agent 0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 1. 1. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.25.34 0
 
   Step 18:
-    Agent 0: Sleep, Reward: [-2.2], Obs: [0. 0. 0. 1. 0. 0. 1. 1. 0. 0.]
-    Agent 1: Block User, Reward: [-2.2], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverNetworkServices 10.0.1.132
+    Agent 0: Sleep, Reward: [-0.1], Obs: [1. 1. 0. 1. 0. 0. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User2
 
   Step 19:
-    Agent 0: Restore User2, Reward: [-1.1], Obs: [0. 0. 0. 1. 0. 0. 1. 1. 0. 0.]
-    Agent 1: Sleep, Reward: [-1.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 1.]
-    Red Agent Action: DiscoverNetworkServices 10.0.1.132
+    Agent 0: Remove User1, Reward: [-0.1], Obs: [0. 0. 0. 1. 0. 0. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.239.227
 
   Step 20:
-    Agent 0: Remove User2, Reward: [-0.6], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: ExploitRemoteService 10.0.219.212 0
+    Agent 0: Restore User2, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-1.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.239.230
 
   Step 21:
-    Agent 0: Remove User1, Reward: [-0.6], Obs: [0. 0. 0. 1. 1. 1. 0. 1. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1
 
   Step 22:
-    Agent 0: Remove User2, Reward: [-0.1], Obs: [0. 0. 1. 0. 0. 0. 0. 1. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.25.34 0
 
   Step 23:
-    Agent 0: Remove User2, Reward: [-0.6], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
+    Agent 0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.25.40 0
 
   Step 24:
-    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: PrivilegeEscalate User2
+    Agent 0: Remove User1, Reward: [0.], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.25.40 0
 
   Step 25:
-    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: ExploitRemoteService 10.0.219.212 0
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1
 
   Step 26:
-    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: ExploitRemoteService 10.0.219.212 0
-
-  Step 27:
-    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
-
-  Step 28:
-    Agent 0: Sleep, Reward: [-0.2], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.2], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 0: Analyse User2, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
     Red Agent Action: PrivilegeEscalate User2
 
-  Step 29:
-    Agent 0: Sleep, Reward: [-0.2], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.2], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverNetworkServices 10.0.1.132
+  Step 27:
+    Agent 0: Analyse User2, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.239.227
 
-Thread 0: Total Reward = [-15.200003]
+  Step 28:
+    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 1. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.1], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.239.230
+
+  Step 29:
+    Agent 0: Restore User2, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 1. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-1.], Obs: [0. 0. 0. 0. 1. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.239.230 8
+
+Thread 0: Total Reward = [-8.299999]
 
 Thread 1:
   Step 0:
-    Agent 0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverRemoteSystems 10.0.196.96/28
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverRemoteSystems 10.0.58.16/28
 
   Step 1:
-    Agent 0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverNetworkServices 10.0.196.99
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.58.21
 
   Step 2:
-    Agent 0: Sleep, Reward: [0.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverNetworkServices 10.0.196.110
-
-  Step 3:
     Agent 0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 1. 0. 0. 0. 0. 0.]
     Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: ExploitRemoteService 10.0.196.110 0
+    Red Agent Action: DiscoverNetworkServices 10.0.58.23
+
+  Step 3:
+    Agent 0: Sleep, Reward: [0.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.58.21 0
 
   Step 4:
-    Agent 0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: ExploitRemoteService 10.0.196.110 0
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.58.21 0
 
   Step 5:
-    Agent 0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: ExploitRemoteService 10.0.196.99 0
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.58.23 0
 
   Step 6:
     Agent 0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 0. 0. 0.]
     Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
+    Red Agent Action: ExploitRemoteService 10.0.58.21 0
 
   Step 7:
-    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 0: Remove User1, Reward: [0.], Obs: [0. 0. 0. 1. 1. 1. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
     Red Agent Action: Sleep
 
   Step 8:
-    Agent 0: Analyse User2, Reward: [-0.6], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
     Red Agent Action: PrivilegeEscalate User2
 
   Step 9:
-    Agent 0: Analyse User2, Reward: [-0.1], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
     Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverRemoteSystems 10.0.133.80/28
+    Red Agent Action: DiscoverRemoteSystems 10.0.111.160/28
 
   Step 10:
-    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 1. 0. 0. 1. 1. 0. 0.]
+    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
     Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverNetworkServices 10.0.133.93
+    Red Agent Action: DiscoverNetworkServices 10.0.111.163
 
   Step 11:
-    Agent 0: Restore User2, Reward: [-3.], Obs: [0. 0. 0. 1. 0. 0. 1. 1. 0. 0.]
-    Agent 1: Block User, Reward: [-3.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverNetworkServices 10.0.133.84
+    Agent 0: Restore User2, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-1.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.111.167
 
   Step 12:
-    Agent 0: Remove User2, Reward: [-0.6], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 1.]
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
     Red Agent Action: PrivilegeEscalate User1
 
   Step 13:
-    Agent 0: Analyse User2, Reward: [-0.6], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: ExploitRemoteService 10.0.196.110 0
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.58.21 0
 
   Step 14:
-    Agent 0: Remove User1, Reward: [-0.6], Obs: [0. 0. 0. 1. 1. 1. 0. 1. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.58.23 0
 
   Step 15:
-    Agent 0: Remove User2, Reward: [-0.1], Obs: [0. 0. 1. 0. 0. 0. 0. 1. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
+    Agent 0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.58.21 0
 
   Step 16:
-    Agent 0: Remove User2, Reward: [-0.6], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
+    Agent 0: Remove User1, Reward: [0.], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1
 
   Step 17:
-    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: PrivilegeEscalate User2
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.58.21 0
 
   Step 18:
-    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: ExploitRemoteService 10.0.196.110 0
+    Agent 0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 1. 1. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.58.23 0
 
   Step 19:
-    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 0: Sleep, Reward: [-0.1], Obs: [1. 1. 0. 1. 0. 0. 0. 1. 0. 0.]
     Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
-
-  Step 20:
-    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: Sleep
-
-  Step 21:
-    Agent 0: Sleep, Reward: [-0.2], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.2], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
     Red Agent Action: PrivilegeEscalate User2
 
+  Step 20:
+    Agent 0: Remove User1, Reward: [-0.1], Obs: [0. 0. 0. 1. 0. 0. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.111.167
+
+  Step 21:
+    Agent 0: Restore User2, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-1.], Obs: [0. 0. 0. 0. 1. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.111.163
+
   Step 22:
-    Agent 0: Sleep, Reward: [-0.2], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.2], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverNetworkServices 10.0.133.84
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1
 
   Step 23:
-    Agent 0: Sleep, Reward: [-0.2], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Sleep, Reward: [-0.2], Obs: [0. 0. 0. 0. 1. 0. 0. 0. 0. 0.]
-    Red Agent Action: DiscoverNetworkServices 10.0.133.93
+    Agent 0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.58.23 0
 
   Step 24:
-    Agent 0: Sleep, Reward: [-2.2], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Block User, Reward: [-2.2], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
-    Red Agent Action: ExploitRemoteService 10.0.133.93 4
+    Agent 0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.58.21 0
 
   Step 25:
-    Agent 0: Sleep, Reward: [-2.2], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Block User, Reward: [-2.2], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 1.]
-    Red Agent Action: ExploitRemoteService 10.0.133.93 4
+    Agent 0: Remove User1, Reward: [0.], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: Sleep
 
   Step 26:
-    Agent 0: Sleep, Reward: [-2.2], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Block User, Reward: [-2.2], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 1.]
-    Red Agent Action: ExploitRemoteService 10.0.133.84 4
+    Agent 0: Analyse User2, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User2
 
   Step 27:
-    Agent 0: Sleep, Reward: [-2.2], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Block User, Reward: [-2.2], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 1.]
-    Red Agent Action: ExploitRemoteService 10.0.133.93 4
+    Agent 0: Analyse User2, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.111.163
 
   Step 28:
-    Agent 0: Sleep, Reward: [-2.2], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Block User, Reward: [-2.2], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 1.]
-    Red Agent Action: ExploitRemoteService 10.0.133.93 4
+    Agent 0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 1. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-0.1], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.111.167
 
   Step 29:
-    Agent 0: Sleep, Reward: [-2.2], Obs: [0. 0. 1. 0. 0. 0. 0. 0. 0. 0.]
-    Agent 1: Block User, Reward: [-2.2], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 1.]
-    Red Agent Action: ExploitRemoteService 10.0.133.93 4
+    Agent 0: Restore User2, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 1. 1. 0. 0.]
+    Agent 1: Sleep, Reward: [-1.], Obs: [0. 0. 0. 0. 1. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1
 
-Thread 1: Total Reward = [-21.]
+Thread 1: Total Reward = [-9.3]
 
