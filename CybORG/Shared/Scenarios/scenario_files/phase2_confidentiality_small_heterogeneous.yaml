@@ -112,7 +112,7 @@ Agents:
         type: VelociraptorServer
         username: ubuntu
     wrappers: [ ]
-  Blue2:
+  BlueFW:
     Team: Blue
     internal_only: False
     AllowedSubnets:
@@ -124,6 +124,10 @@ Agents:
           System info: All
           User info: All
         Op_Host0:
+          Interfaces: All
+          System info: All
+          User info: All
+        Op_Server0:
           Interfaces: All
           System info: All
           User info: All
@@ -141,6 +145,11 @@ Agents:
         username: ubuntu
       - hostname: Op_Host0
         name: VeloOp_Host0
+        parent: VeloServer
+        type: VelociraptorClient
+        username: ubuntu
+      - hostname: Op_Server0
+        name: VeloOp_Server0
         parent: VeloServer
         type: VelociraptorClient
         username: ubuntu

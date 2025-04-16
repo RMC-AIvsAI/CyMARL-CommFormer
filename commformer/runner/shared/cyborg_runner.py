@@ -72,6 +72,10 @@ class CybORGRunner(Runner):
 
             # save comms channels matrix for the episode, used by save_actions_to_file function
             comms_channels = _t2n(self.trainer.policy.transformer.edge_return(exact=True))
+            # add self loop to the comms channels matrix if required
+            if self.all_args.self_loop_add:
+                comms_channels = comms_channels + np.eye(comms_channels.shape[0])
+                comms_channels = np.clip(comms_channels, 0, 1)
 
             for step in range(self.episode_length):
                 step_start_time = time.time()
@@ -252,6 +256,9 @@ class CybORGRunner(Runner):
         flag = [False for _ in range(self.all_args.eval_episodes)]
 
         eval_comms_channels = _t2n(self.trainer.policy.transformer.edge_return(exact=True))
+        if self.all_args.self_loop_add:
+            eval_comms_channels = eval_comms_channels + np.eye(eval_comms_channels.shape[0])
+            eval_comms_channels = np.clip(eval_comms_channels, 0, 1)
 
         for eval_step in range(self.all_args.eval_episode_length):
             self.trainer.prep_rollout()
@@ -383,7 +390,7 @@ class CybORGRunner(Runner):
                         obs = self.buffer.obs[step][thread_id][agent_id]
 
                         # Write the agent's action, reward, and observation to the file
-                        file.write(f"    Agent {agent_id}: {action_string}, Reward: {reward}, Obs: {obs}\n")
+                        file.write(f"    {agent_ids[agent_id]}: {action_string}, Reward: {reward}, Obs: {obs}\n")
 
                     # Get the Red Agent action for the current step and thread
                     # Red actions are taken after blue actions
@@ -444,7 +451,7 @@ class CybORGRunner(Runner):
                         obs = eval_buffer_obs[step][thread_id][agent_id]
 
                         # Write the agent's action, reward, and observation to the file
-                        file.write(f"    Agent {agent_id}: {action_string}, Reward: {reward}, Obs: {obs}\n")
+                        file.write(f"    {agent_ids[agent_id]}: {action_string}, Reward: {reward}, Obs: {obs}\n")
 
                     # Get the Red Agent action for the current step and thread
                     # Red actions are taken after blue actions

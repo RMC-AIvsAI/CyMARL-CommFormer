@@ -62,9 +62,11 @@ class CyborgEnv(MultiAgentEnv):
         self.all_obs[self.step_count] = copy.deepcopy(self._obs)
         if self.use_CommFormer:
             done = list(done.values())
+            info = (str(info['Red']['action']) + ' Success: ' + str(info['Red']['observation']['success']))
         else:
             done = int(all(done.values()))
-        return torch.tensor(list(reward.values())), done, str(info['Red']['action'])
+            info = str(info['Red']['action'])
+        return torch.tensor(list(reward.values())), done, info
 
     def get_obs(self):
         # Returns all agent observations in a list

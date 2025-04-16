@@ -305,7 +305,7 @@ def get_config():
     parser.add_argument("--warmup", type=int, default=10)
     parser.add_argument("--post_stable", action='store_true', default=False)
     parser.add_argument("--post_ratio", type=float, default=0.5)
-    parser.add_argument("--self_loop_add", action='store_false', default=True)
+    parser.add_argument("--self_loop_add", action='store_false', default=True, help="used to ensure attention masks always consider own agent's information")
     parser.add_argument("--alg_seed", type=int, default=1)
     parser.add_argument("--no_relation_enhanced", action='store_true', default=False)
     return parser
