@@ -139,7 +139,7 @@ class CybORGRunner(Runner):
                                 avg_step_time))
 
                 train_infos["average_episode_rewards"] = np.mean(self.buffer.rewards) * self.episode_length
-                print("average episode rewards is {}".format(train_infos["average_episode_rewards"]))
+                print("average episode rewards is {}\n".format(train_infos["average_episode_rewards"]))
                 self.log_train(train_infos, total_num_steps)
 
                 edges = _t2n(self.trainer.policy.transformer.edges)
@@ -406,7 +406,7 @@ class CybORGRunner(Runner):
 
                 file.write("\n")
 
-        print(f"Training actions have been saved to {actions_file_path}")
+        print(f"\nTraining actions have been saved to {actions_file_path}\n")
 
     def save_eval_actions_to_file(self, actions_file_path, comms_channels, eval_buffer_obs, eval_buffer_rew, eval_buffer_act, eval_buffer_infos):
          # Get the agent IDs from the environment
@@ -467,4 +467,4 @@ class CybORGRunner(Runner):
 
                 file.write("\n")
 
-        print(f"Evaluation actions have been saved to {actions_file_path}")
+        print(f"\nEvaluation actions have been saved to {actions_file_path}\n")

@@ -1,0 +1,372 @@
+Active Communication Channels for the Episode:
+          Blue0     Blue1     BlueFW    
+Blue0     1         1         1         
+Blue1     1         1         1         
+BlueFW    1         0         1         
+
+Thread 0:
+  Step 0:
+    Blue0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverRemoteSystems 10.0.234.144/28 Success: TRUE
+
+  Step 1:
+    Blue0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.234.149 Success: TRUE
+
+  Step 2:
+    Blue0: Sleep, Reward: [0.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.234.152 Success: TRUE
+
+  Step 3:
+    Blue0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 1. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.234.149 0 Success: TRUE
+
+  Step 4:
+    Blue0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.234.152 0 Success: TRUE
+
+  Step 5:
+    Blue0: Remove User1, Reward: [0.], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1 Success: FALSE
+
+  Step 6:
+    Blue0: Analyse User2, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User2 Success: TRUE
+
+  Step 7:
+    Blue0: Analyse User2, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverRemoteSystems 10.0.223.144/28 Success: TRUE
+
+  Step 8:
+    Blue0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 1. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.223.151 Success: TRUE
+
+  Step 9:
+    Blue0: Restore User2, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 1. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-1.], Obs: [0. 0. 0. 0. 1. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.223.147 Success: FALSE
+
+  Step 10:
+    Blue0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.234.149 0 Success: TRUE
+
+  Step 11:
+    Blue0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.234.152 0 Success: TRUE
+
+  Step 12:
+    Blue0: Remove User1, Reward: [0.], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: Sleep Success: UNKNOWN
+
+  Step 13:
+    Blue0: Analyse User2, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User2 Success: TRUE
+
+  Step 14:
+    Blue0: Analyse User2, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.223.151 Success: TRUE
+
+  Step 15:
+    Blue0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 1. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 1. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.223.147 Success: TRUE
+
+  Step 16:
+    Blue0: Restore User2, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 1. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-1.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1 Success: FALSE
+
+  Step 17:
+    Blue0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.234.149 0 Success: TRUE
+
+  Step 18:
+    Blue0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.223.147 4 Success: FALSE
+
+  Step 19:
+    Blue0: Remove User1, Reward: [0.], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.234.152 0 Success: TRUE
+
+  Step 20:
+    Blue0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 1. 1. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1 Success: FALSE
+
+  Step 21:
+    Blue0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User2 Success: TRUE
+
+  Step 22:
+    Blue0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.223.147 Success: TRUE
+
+  Step 23:
+    Blue0: Restore User2, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-1.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.223.151 Success: FALSE
+
+  Step 24:
+    Blue0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.234.152 0 Success: TRUE
+
+  Step 25:
+    Blue0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.234.149 0 Success: TRUE
+
+  Step 26:
+    Blue0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: Sleep Success: UNKNOWN
+
+  Step 27:
+    Blue0: Remove User1, Reward: [-0.1], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User2 Success: TRUE
+
+  Step 28:
+    Blue0: Analyse User2, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.223.147 Success: TRUE
+
+  Step 29:
+    Blue0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 1. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.223.151 Success: TRUE
+
+Thread 0: Total Reward = [-8.099999]
+
+Thread 1:
+  Step 0:
+    Blue0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverRemoteSystems 10.0.230.64/28 Success: TRUE
+
+  Step 1:
+    Blue0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.230.78 Success: TRUE
+
+  Step 2:
+    Blue0: Sleep, Reward: [0.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.230.73 Success: TRUE
+
+  Step 3:
+    Blue0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 1. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.230.73 0 Success: TRUE
+
+  Step 4:
+    Blue0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 1. 1. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.230.78 0 Success: TRUE
+
+  Step 5:
+    Blue0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: Sleep Success: UNKNOWN
+
+  Step 6:
+    Blue0: Remove User1, Reward: [0.], Obs: [0. 0. 0. 1. 0. 0. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1 Success: FALSE
+
+  Step 7:
+    Blue0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User2 Success: TRUE
+
+  Step 8:
+    Blue0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverRemoteSystems 10.0.209.64/28 Success: TRUE
+
+  Step 9:
+    Blue0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.209.65 Success: TRUE
+
+  Step 10:
+    Blue0: Restore User2, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-1.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.209.73 Success: FALSE
+
+  Step 11:
+    Blue0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.230.78 0 Success: TRUE
+
+  Step 12:
+    Blue0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.230.73 0 Success: TRUE
+
+  Step 13:
+    Blue0: Remove User1, Reward: [0.], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1 Success: FALSE
+
+  Step 14:
+    Blue0: Analyse User2, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.6], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User2 Success: TRUE
+
+  Step 15:
+    Blue0: Analyse User2, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.209.65 Success: TRUE
+
+  Step 16:
+    Blue0: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 1. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.209.73 Success: TRUE
+
+  Step 17:
+    Blue0: Restore User2, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 1. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-1.], Obs: [0. 0. 0. 0. 1. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.209.65 4 Success: FALSE
+
+  Step 18:
+    Blue0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.230.78 0 Success: TRUE
+
+  Step 19:
+    Blue0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.230.73 0 Success: FALSE
+
+  Step 20:
+    Blue0: Remove User1, Reward: [0.], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1 Success: FALSE
+
+  Step 21:
+    Blue0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.230.78 0 Success: TRUE
+
+  Step 22:
+    Blue0: Sleep, Reward: [0.], Obs: [1. 1. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.230.73 0 Success: FALSE
+
+  Step 23:
+    Blue0: Remove User1, Reward: [0.], Obs: [0. 0. 0. 1. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.230.73 0 Success: FALSE
+
+  Step 24:
+    Blue0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User1 Success: FALSE
+
+  Step 25:
+    Blue0: Analyse User2, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Blue1: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.5], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.230.73 0 Success: TRUE
+
+  Step 26:
+    Blue0: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 1. 1. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [0.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: ExploitRemoteService 10.0.230.78 0 Success: TRUE
+
+  Step 27:
+    Blue0: Sleep, Reward: [-0.1], Obs: [1. 1. 0. 1. 0. 0. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: PrivilegeEscalate User2 Success: TRUE
+
+  Step 28:
+    Blue0: Remove User1, Reward: [-0.1], Obs: [0. 0. 0. 1. 0. 0. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-0.1], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.209.65 Success: TRUE
+
+  Step 29:
+    Blue0: Restore User2, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+    Blue1: Sleep, Reward: [-1.], Obs: [1. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    BlueFW: Sleep, Reward: [-1.], Obs: [0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
+    Red Agent Action: DiscoverNetworkServices 10.0.209.73 Success: FALSE
+
+Thread 1: Total Reward = [-7.7999997]
+
