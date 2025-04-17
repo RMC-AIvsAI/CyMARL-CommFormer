@@ -222,12 +222,21 @@ class BlueTableDIALWrapper(BaseWrapper):
 
     def _create_vector(self, agent, obs, success):
         table = self._create_blue_table(agent, obs, success)._rows
-        #print(table)
+        proto_vector = []
         # return empty if no obs provided
         if not len(table):
-            return np.empty(shape=(0,))
+            if self.block_action:
+                vector = []
+                for subnet, val in self.agent_blocks[agent].items():
+                    if val:
+                        value = [1]
+                    else:
+                        value = [0]
+                    vector.extend(value)
+                proto_vector.append(vector)
+            return proto_vector
+            #return np.empty(shape=(0,))
 
-        proto_vector = []
         # six flags for each host:
         # 0 - is this host being scanned
         # 1 - is this host compromised
