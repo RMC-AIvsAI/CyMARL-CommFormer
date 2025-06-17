@@ -85,7 +85,6 @@ Agents:
       - Remove
       - Restore
       - Analyse
-      - Block
     agent_type: SleepAgent
     reward_calculator_type: BlueConfidentiality
     starting_sessions:
