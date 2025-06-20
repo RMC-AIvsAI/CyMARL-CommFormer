@@ -10,10 +10,6 @@ Agents:
           Interfaces: All
           System info: All
           User info: All
-        User0:
-          Interfaces: All
-          System info: All
-          User info: All
         User1:
           Interfaces: All
           System info: All
@@ -29,11 +25,6 @@ Agents:
     starting_sessions:
       - hostname: Defender
         name: VeloDefender
-        parent: VeloServer
-        type: VelociraptorClient
-        username: ubuntu
-      - hostname: User0
-        name: VeloUser0
         parent: VeloServer
         type: VelociraptorClient
         username: ubuntu
