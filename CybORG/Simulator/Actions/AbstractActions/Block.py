@@ -22,7 +22,7 @@ class Block(Action):
             if action.name == 'Analyse':
                 red_sessions = state.hosts[action.hostname].sessions['Red']
                 if any(red_sessions) and (state.sessions['Red'][red_sessions[0]].username == 'root' or state.sessions['Red'][red_sessions[0]].username == 'SYSTEM'):
-                    self.action_cost = 1
+                    self.action_cost = 0
                     break  # Exit the loop once the condition is met
         
         obs = Observation(True)

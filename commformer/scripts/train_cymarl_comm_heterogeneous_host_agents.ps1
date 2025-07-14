@@ -1,4 +1,4 @@
 # Trains 5 x CommFormer heterogeneous agents in an identical network topology to that seen in CyMARL phase 2.
 # Refer to the scenario file for specifics on agent actions and network topology.
 python .\train\train_cymarl_comm.py --env_name "CybORG" --algorithm_name "commformer_dec" --scenario_name "phase2_confidentiality_small_heterogeneous_host_agents"`
---eval_episode_length 30 --action_limiting "True" --n_rollout_threads 32 --n_training_threads 16 --episode_length 30 --num_env_steps 5000000 --log_interval 10 --use_bilevel "True" --seed 1 --alg_seed 1 --use_eval "True" --eval_interval 10 --n_eval_rollout_threads 2 --eval_episodes 2 --sparsity 0.7 --use_linear_lr_decay "True"
+--eval_episode_length 30 --action_limiting "True" --n_rollout_threads 32 --n_training_threads 16 --episode_length 30 --num_env_steps 10000000 --log_interval 10 --use_bilevel "True" --seed 1 --alg_seed 1 --use_eval "True" --eval_interval 10 --n_eval_rollout_threads 2 --eval_episodes 2 --sparsity 0.7 --use_linear_lr_decay "False" --entropy_coef 0.05 --clip_param 0.03 --ppo_epoch 10 --experiment_name "no_lr_decay-ppo_clip_03-ppo_epoch_10-entropy_coef_05"
