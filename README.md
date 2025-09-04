@@ -42,3 +42,8 @@ To run experiments on CyMARL-CommFormer use either pre-built scripts found in co
 python .\train\train_cymarl_comm.py --env_name "CybORG" --algorithm_name "commformer_dec" --scenario_name "confidentiality_small"`
 --num_agents 2 --eval_episode_length 10 --n_rollout_threads 4 --seed 4 --episode_length 30 --num_env_steps 2000000 --log_interval 10
 ```
+
+## Baseline Results and Analysis
+Baseline results for CyMARL-CommFormer can be found in the [Baseline Results](commformer/baseline_results/) folder.
+
+A Jupyter Notebook containing the analysis conducted using these results can be found in [Analysis](commformer_experiment_analysis.ipynb).
