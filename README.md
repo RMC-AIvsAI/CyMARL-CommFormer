@@ -3,7 +3,7 @@ This codebase adapts 2 libraries: CyMARL and CommFormer to train Multiple Agents
 
 More information can be found in the respective library folders: [CyMARL](pycomm/) and [CommFormer](commformer/).
 
-This work builds upon the work completed in Faizan Contractor and Dr. Ranwa Al Mallah in Learning to Communicate in Multi-Agent Reinforcement Learning for Autonomous Cyber Defence.
+This work builds upon the work completed by Faizan Contractor and Dr. Ranwa Al Mallah in Learning to Communicate in Multi-Agent Reinforcement Learning for Autonomous Cyber Defence.
 
 ## Installation instructions
 Codebase has been tested using Windows 11. To install, begin with a new Anaconda environment following these steps:
